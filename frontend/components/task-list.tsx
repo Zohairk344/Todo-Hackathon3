@@ -104,7 +104,6 @@ export function TaskList({ initialTasks, user_id }: TaskListProps) {
     // Optimistic update
     const originalTasks = [...tasks];
     const updatedTask = { ...editingTask, ...data };
-    // @ts-ignore - Ignoring dueDate type mismatch for optimistic update
     setTasks(tasks.map(t => t.id === editingTask.id ? updatedTask : t));
 
     try {
@@ -164,7 +163,7 @@ export function TaskList({ initialTasks, user_id }: TaskListProps) {
           </div>
           <h3 className="mt-2 text-lg font-semibold">No tasks yet</h3>
           <p className="mb-6 text-sm text-muted-foreground max-w-sm">
-            You're all caught up! Create your first task to get started and track your progress.
+            You&apos;re all caught up! Create your first task to get started and track your progress.
           </p>
         </div>
       ) : sortedTasks.length === 0 ? (

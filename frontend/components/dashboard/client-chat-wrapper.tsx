@@ -1,0 +1,9 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { ChatWidget } from "./ChatWidget";
+
+export function ClientChatWrapper({ userId }: { userId: string }) {
+  const router = useRouter();
+  return <ChatWidget userId={userId} onTasksChange={() => router.refresh()} />;
+}

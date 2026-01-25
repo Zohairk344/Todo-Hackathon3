@@ -1,45 +1,43 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
 
-export type ThemeStyle = "pro" | "playful" | "hacker";
-
-interface ThemeStyleContextType {
-  style: ThemeStyle;
-  setStyle: (style: ThemeStyle) => void;
-}
-
-const ThemeStyleContext = createContext<ThemeStyleContextType | undefined>(undefined);
-
-export function ThemeStyleProvider({ children }: { children: React.ReactNode }) {
-  const [style, setStyle] = useState<ThemeStyle>("pro");
-  const [mounted, setMounted] = useState(false);
-
+export function ThemeStyleProvider({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) {
   useEffect(() => {
-    const savedStyle = localStorage.getItem("theme-style") as ThemeStyle;
-    if (savedStyle) {
-      setStyle(savedStyle);
+    // Legacy cleanup: Reset invalid themes to system
+    const savedTheme = localStorage.getItem("theme");
+    const legacyThemes = ["hacker", "forest", "playful", "vibrant", "pro"];
+    if (savedTheme && legacyThemes.includes(savedTheme)) {
+      localStorage.removeItem("theme"); // Let next-themes handle default (system)
     }
-    setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.setAttribute("data-style", style);
-    localStorage.setItem("theme-style", style);
-  }, [style, mounted]);
-
   return (
-    <ThemeStyleContext.Provider value={{ style, setStyle }}>
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+      storageKey="todo-app-theme"
+      {...props}
+    >
       {children}
-    </ThemeStyleContext.Provider>
+    </NextThemesProvider>
   );
 }
 
+// Compatibility hook - prefer useTheme() from next-themes directly in new code
 export function useThemeStyle() {
-  const context = useContext(ThemeStyleContext);
-  if (!context) {
-    throw new Error("useThemeStyle must be used within a ThemeStyleProvider");
-  }
-  return context;
+  const { theme, setTheme } = useTheme();
+  return {
+    mode: theme,
+    setMode: (m: string) => setTheme(m),
+    theme: theme,
+    setTheme: (t: string) => setTheme(t),
+    isModeForced: false
+  };
 }
+
+export type Mode = string;
+export type Theme = string;

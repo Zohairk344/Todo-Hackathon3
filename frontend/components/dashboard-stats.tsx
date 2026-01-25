@@ -17,8 +17,8 @@ export function DashboardStats({ tasks }: DashboardStatsProps) {
 
   const now = new Date();
   const urgent = tasks.filter((t) => {
-    if (t.completed || !t.due_date) return false;
-    const due = new Date(t.due_date);
+    if (t.completed || !t.dueDate) return false;
+    const due = new Date(t.dueDate);
     const diff = due.getTime() - now.getTime();
     const hours = diff / (1000 * 60 * 60);
     // < 48 hours includes overdue (negative hours)

@@ -1,0 +1,26 @@
+tools:
+  add_task:
+    description: Create a new task with advanced details.
+    parameters:
+      type: object
+      properties:
+        title:
+          type: string
+          description: The title of the task.
+        description:
+          type: string
+          description: Optional description of the task.
+        priority:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+          default: MEDIUM
+          description: Priority level of the task.
+        due_date:
+          type: string
+          format: date-time
+          description: ISO 8601 formatted due date string.
+        category_name:
+          type: string
+          description: Name of the category to assign the task to.
+      required:
+        - title

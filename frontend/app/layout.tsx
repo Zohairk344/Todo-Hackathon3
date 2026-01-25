@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Poppins, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
-import { ThemeStyleProvider } from "@/lib/theme-style-context";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const inter = Inter({ 
@@ -25,18 +25,31 @@ export const metadata: Metadata = {
   description: "Task Management App",
 };
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "black" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log("LAYOUT LOADED");
   return (
-    <html lang="en">
-      <body className={`${inter.variable} ${poppins.variable} ${mono.variable} font-sans antialiased`}>
-        <ThemeStyleProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.variable} ${poppins.variable} ${mono.variable} font-sans antialiased bg-background text-foreground`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           {children}
           <Toaster />
-        </ThemeStyleProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

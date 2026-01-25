@@ -1,0 +1,56 @@
+openapi: 3.0.0
+info:
+  title: Todo Chat API
+  version: 1.0.0
+paths:
+  /api/{user_id}/chat:
+    post:
+      summary: Send a message to the AI Agent
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+components:
+  schemas:
+    ChatRequest:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+        conversation_id:
+          type: integer
+          nullable: true
+    ChatResponse:
+      type: object
+      required: [response, conversation_id]
+      properties:
+        response:
+          type: string
+        conversation_id:
+          type: integer
+        tool_calls:
+          type: array
+          items:
+            type: object
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

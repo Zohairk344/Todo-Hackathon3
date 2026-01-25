@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ThemeSelector } from "@/components/theme-selector";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import {
@@ -74,7 +73,7 @@ export default function SettingsPage() {
 
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Manage your account settings and appearance.</p>
+        <p className="text-muted-foreground">Manage your account settings.</p>
       </div>
 
       <div className="grid gap-8">
@@ -110,16 +109,6 @@ export default function SettingsPage() {
               </Button>
             </CardFooter>
           </form>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Appearance</CardTitle>
-            <CardDescription>Customize the look and feel of your workspace.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ThemeSelector />
-          </CardContent>
         </Card>
 
         <Card className="border-destructive/50">

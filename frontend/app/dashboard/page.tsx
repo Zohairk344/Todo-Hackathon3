@@ -20,8 +20,8 @@ export default async function DashboardPage() {
   
   try {
       initialTasks = await api.getTasks(user_id);
-  } catch (error: any) {
-      if (error instanceof AuthError || error.message === "Unauthorized") {
+  } catch (error: unknown) {
+      if (error instanceof AuthError || (error instanceof Error && error.message === "Unauthorized")) {
           redirect("/sign-in");
       } else {
           console.error("Failed to fetch initial tasks:", error);
@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto py-10 px-4">
+    <div className="container mx-auto py-10 px-4 animate-enter">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <AddTaskForm user_id={user_id} />

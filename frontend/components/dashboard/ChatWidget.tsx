@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, AlertTriangle } from "lucide-react";
 import { useTheme } from "next-themes";
+import { fetchAPI } from "@/lib/api";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,6 +20,7 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
 
@@ -26,7 +28,8 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       setIsLoading(true);
-      fetch(`/api/${userId}/chat`)
+      setErrorMessage(null);
+      fetchAPI(`/api/${userId}/chat`)
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch history");
           return res.json();
@@ -38,7 +41,7 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
         })
         .catch((err) => {
           console.error(err);
-          // Optional: Add a system message for error
+          setErrorMessage("Failed to load history");
         })
         .finally(() => setIsLoading(false));
     }
@@ -47,13 +50,14 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isOpen]);
+  }, [messages, isOpen, errorMessage]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage = input.trim();
     setInput("");
+    setErrorMessage(null);
     
     // Optimistic UI
     const newMessages: Message[] = [...messages, { role: "user", content: userMessage }];
@@ -61,7 +65,7 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`/api/${userId}/chat`, {
+      const res = await fetchAPI(`/api/${userId}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -85,10 +89,7 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
 
     } catch (error) {
       console.error(error);
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "Sorry, something went wrong. Please try again." },
-      ]);
+      setErrorMessage("Connection Error");
     } finally {
       setIsLoading(false);
     }
@@ -105,7 +106,7 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 p-4 bg-blue-600 text-white rounded-full shadow-xl hover:bg-blue-700 transition-all duration-200"
+        className="p-4 bg-primary text-primary-foreground rounded-full shadow-xl hover:bg-primary/90 transition-all duration-200"
       >
         <MessageCircle size={28} />
       </button>
@@ -113,25 +114,25 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
   }
 
   return (
-    <div className="fixed bottom-0 right-0 w-full h-full sm:bottom-6 sm:right-6 sm:w-96 sm:h-[32rem] z-50 flex flex-col bg-white dark:bg-gray-800 sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors duration-200">
+    <div className="fixed bottom-0 left-0 w-full h-full sm:absolute sm:bottom-0 sm:left-0 sm:w-96 sm:h-[32rem] flex flex-col bg-card text-card-foreground sm:rounded-2xl shadow-2xl border border-border overflow-hidden transition-colors duration-200">
       {/* Header */}
-      <div className="bg-blue-600 p-4 flex justify-between items-center text-white">
+      <div className="bg-muted/40 p-4 flex justify-between items-center border-b border-border">
         <h3 className="font-semibold text-lg flex items-center gap-2">
           <MessageCircle size={20} />
           AI Assistant
         </h3>
         <button 
           onClick={() => setIsOpen(false)}
-          className="p-1 hover:bg-blue-700 rounded-full transition-colors"
+          className="p-1 hover:bg-muted rounded-full transition-colors"
         >
           <X size={20} />
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900/50">
-        {messages.length === 0 && !isLoading && (
-          <div className="text-center text-gray-500 dark:text-gray-400 mt-10 text-sm">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/10">
+        {messages.length === 0 && !isLoading && !errorMessage && (
+          <div className="text-center text-muted-foreground mt-10 text-sm">
             No messages yet. Ask me to add a task!
           </div>
         )}
@@ -146,8 +147,8 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
             <div
               className={`max-w-[85%] p-3 rounded-2xl text-sm whitespace-pre-wrap ${
                 msg.role === "user"
-                  ? "bg-blue-600 text-white rounded-br-none"
-                  : "bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-600 rounded-bl-none shadow-sm"
+                  ? "bg-primary text-primary-foreground rounded-br-none"
+                  : "bg-muted text-foreground border border-border rounded-bl-none shadow-sm"
               }`}
             >
               {msg.content}
@@ -157,17 +158,27 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
         
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-white dark:bg-gray-700 p-3 rounded-2xl rounded-bl-none border border-gray-200 dark:border-gray-600 shadow-sm flex items-center gap-2 text-gray-500 dark:text-gray-300 text-sm">
+            <div className="bg-muted p-3 rounded-2xl rounded-bl-none border border-border shadow-sm flex items-center gap-2 text-muted-foreground text-sm">
               <Loader2 className="animate-spin" size={16} />
               Thinking...
             </div>
           </div>
         )}
+
+        {errorMessage && (
+           <div className="flex justify-center mt-2">
+             <div className="bg-destructive/10 border border-destructive/20 text-destructive px-3 py-2 rounded-lg text-sm flex items-center gap-2">
+               <AlertTriangle size={14} />
+               {errorMessage}
+             </div>
+           </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700">
+      <div className="p-4 bg-card border-t border-border">
         <div className="flex gap-2 relative">
           <input
             type="text"
@@ -176,12 +187,12 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             disabled={isLoading}
-            className="flex-1 p-3 pr-12 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:text-gray-400"
+            className="flex-1 p-3 pr-12 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="absolute right-2 top-2 p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+            className="absolute right-2 top-2 p-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Send size={18} />
           </button>
