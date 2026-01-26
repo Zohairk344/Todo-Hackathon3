@@ -64,3 +64,11 @@
   - Action: Update `SQLALCHEMY_DATABASE_URI` to catch both `postgres://` and `postgresql://` and force `postgresql+asyncpg://`.
 - [X] **Task 17: Deploy Phase 16 Fix**
   - Action: Git add, commit, and push.
+
+## Phase 17: Clean Database URL for AsyncPG
+
+- [X] **Task 18: Update app/core/config.py to strip sslmode**
+  - File: `todo-hackathon3/app/core/config.py`
+  - Action: Update `SQLALCHEMY_DATABASE_URI` to remove `sslmode` query parameter.
+- [X] **Task 19: Deploy Phase 17 Fix**
+  - Action: Git add, commit, and push.
