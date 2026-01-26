@@ -56,3 +56,11 @@
   - Action: Refactor to use `create_async_engine` and proper async session factory.
 - [X] **Task 15: Deploy Phase 15 Fix**
   - Action: Git add, commit, and push.
+
+## Phase 16: Force Async Driver in Config
+
+- [X] **Task 16: Update config.py logic**
+  - File: `todo-hackathon3/app/core/config.py`
+  - Action: Update `SQLALCHEMY_DATABASE_URI` to catch both `postgres://` and `postgresql://` and force `postgresql+asyncpg://`.
+- [X] **Task 17: Deploy Phase 16 Fix**
+  - Action: Git add, commit, and push.
