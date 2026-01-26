@@ -72,3 +72,11 @@
   - Action: Update `SQLALCHEMY_DATABASE_URI` to remove `sslmode` query parameter.
 - [X] **Task 19: Deploy Phase 17 Fix**
   - Action: Git add, commit, and push.
+
+## Phase 18: Aggressive Database URL Cleaning
+
+- [X] **Task 20: Update config.py to strip multiple unsupported params**
+  - File: `todo-hackathon3/app/core/config.py`
+  - Action: Update `SQLALCHEMY_DATABASE_URI` to remove `sslmode`, `channel_binding`, and `gssencmode`.
+- [X] **Task 21: Deploy Phase 18 Fix**
+  - Action: Git add, commit, and push.
