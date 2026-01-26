@@ -45,3 +45,14 @@
   - Action: Add `SQLALCHEMY_DATABASE_URI` property and `extra = "ignore"` to Config.
 - [X] **Task 12: Deploy Phase 14 Fix**
   - Action: Git add, commit, and push.
+
+## Phase 15: Switch to Async Database Engine
+
+- [X] **Task 13: Update app/core/config.py**
+  - File: `todo-hackathon3/app/core/config.py`
+  - Action: Update `SQLALCHEMY_DATABASE_URI` to use `postgresql+asyncpg://`.
+- [X] **Task 14: Update app/db.py**
+  - File: `todo-hackathon3/app/db.py`
+  - Action: Refactor to use `create_async_engine` and proper async session factory.
+- [X] **Task 15: Deploy Phase 15 Fix**
+  - Action: Git add, commit, and push.
