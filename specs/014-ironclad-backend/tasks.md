@@ -70,6 +70,16 @@ description: "Actionable, dependency-ordered tasks for Phase 3 Foundation & Chat
 
 ---
 
+## Phase 9: Deployment Fixes
+
+- [x] T019 **Fix Imports**: Add missing `SQLModel` import to `todo-hackathon3/app/main.py` to prevent NameError on startup.
+
+## Phase 9.1: Auth Logic Completion
+
+- [x] T020 **Complete Auth Logic**: Implement `sign-up` and `sign-in` in `todo-hackathon3/app/api/routes/auth.py`.
+- [x] T021 **Support Dual-Token in Deps**: Update `get_current_user` in `todo-hackathon3/app/api/deps.py` to support JWT fallback.
+- [x] T022 **Update User Model**: Add `hashed_password` field to `User` in `todo-hackathon3/app/models.py`.
+
 ## Dependencies & Execution Order
 
 1.  **Phase 1 & 2** are strictly sequential and block all subsequent phases.
