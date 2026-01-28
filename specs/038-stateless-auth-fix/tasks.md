@@ -80,3 +80,11 @@
   - Action: Update `SQLALCHEMY_DATABASE_URI` to remove `sslmode`, `channel_binding`, and `gssencmode`.
 - [X] **Task 21: Deploy Phase 18 Fix**
   - Action: Git add, commit, and push.
+
+## Phase 21: Switch to Cookie-Based Authentication
+
+- [X] **Task 22: Update auth.py for HttpOnly Cookies**
+  - File: `todo-hackathon3/app/api/routes/auth.py`
+  - Action: Implement `response.set_cookie` in `sign-in` and cookie detection in `get-session`.
+- [X] **Task 23: Deploy Phase 21 Fix**
+  - Action: Git add, commit, and push.
