@@ -88,3 +88,11 @@
   - Action: Implement `response.set_cookie` in `sign-in` and cookie detection in `get-session`.
 - [X] **Task 23: Deploy Phase 21 Fix**
   - Action: Git add, commit, and push.
+
+## Phase 22: Enable Auto-Login on Sign-Up
+
+- [X] **Task 24: Update auth.py for Auto-Login**
+  - File: `todo-hackathon3/app/api/routes/auth.py`
+  - Action: Implement `response.set_cookie` in `sign-up` to enable immediate login.
+- [X] **Task 25: Deploy Phase 22 Fix**
+  - Action: Git add, commit, and push.
