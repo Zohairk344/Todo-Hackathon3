@@ -219,6 +219,8 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 - Local Storage (Theme State persistence) (035-theme-reconstruction)
 - TypeScript 5+, Next.js 16.1.1 (App Router) + `next-themes`, `tailwindcss`, `lucide-react`, `tailwindcss-animate` (037-theme-reset)
 - LocalStorage (client-side theme state) (037-theme-reset)
+- Next.js 14+ (App Router), TypeScript 5+, Python 3.10+ (Backend) + `next/headers`, `next/navigation`, `better-auth` (backend) (040-fix-dashboard-session)
+- Neon (PostgreSQL) via SQLModel (040-fix-dashboard-session)
 
 ## Recent Changes
 - 023-implement-mcp-server: Added Python 3.10+

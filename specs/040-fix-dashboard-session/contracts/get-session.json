@@ -1,0 +1,48 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Session API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/auth/get-session": {
+      "get": {
+        "summary": "Retrieve current user session",
+        "description": "Validates the session token from cookies or headers and returns user data.",
+        "responses": {
+          "200": {
+            "description": "Successful session retrieval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": { "type": "string" },
+                    "session": {
+                      "type": "object",
+                      "properties": {
+                        "userId": { "type": "string", "format": "uuid" },
+                        "expiresAt": { "type": "string", "format": "date-time" }
+                      }
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "email": { "type": "string" },
+                        "name": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Missing or invalid token"
+          }
+        }
+      }
+    }
+  }
+}

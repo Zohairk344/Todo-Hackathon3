@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { TaskList } from "@/components/task-list";
 import { AddTaskForm } from "@/components/add-task-form";
-import { ClientChatWrapper } from "@/components/dashboard/client-chat-wrapper";
 import { type Task } from "@/lib/api";
 
 // We define a simple User interface here since we can't import the backend model directly
@@ -84,11 +83,6 @@ export default function DashboardPage() {
       </div>
       {/* Pass tasks loaded from client-side */}
       <TaskList initialTasks={tasks} user_id={user.id} />
-      
-      {/* Floating Chat Widget */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <ClientChatWrapper userId={user.id} />
-      </div>
     </div>
   );
 }

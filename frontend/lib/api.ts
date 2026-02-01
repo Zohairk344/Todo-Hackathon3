@@ -21,6 +21,20 @@ export interface User {
   updatedAt: string;
 }
 
+export interface Session {
+  id: string;
+  userId: string;
+  expiresAt: string;
+  ipAddress?: string;
+  userAgent?: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  session: Session;
+  user: User;
+}
+
 export interface Task {
   id: number;
   userId: string;
