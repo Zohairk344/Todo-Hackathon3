@@ -96,3 +96,11 @@
   - Action: Implement `response.set_cookie` in `sign-up` to enable immediate login.
 - [X] **Task 25: Deploy Phase 22 Fix**
   - Action: Git add, commit, and push.
+
+## Phase 23: Fix Response Schema for Better-Auth Compatibility
+
+- [X] **Task 26: Update auth.py for Schema Compatibility**
+  - File: `todo-hackathon3/app/api/routes/auth.py`
+  - Action: Update `get-session`, `sign-in`, and `sign-up` to return the `{ session, user }` structure.
+- [X] **Task 27: Deploy Phase 23 Fix**
+  - Action: Git add, commit, and push.
