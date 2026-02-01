@@ -104,3 +104,11 @@
   - Action: Update `get-session`, `sign-in`, and `sign-up` to return the `{ session, user }` structure.
 - [X] **Task 27: Deploy Phase 23 Fix**
   - Action: Git add, commit, and push.
+
+## Phase 24: Final Schema Alignment (Adding 'image' field)
+
+- [X] **Task 28: Add image field to auth response**
+  - File: `todo-hackathon3/app/api/routes/auth.py`
+  - Action: Add `image` and `emailVerified` fields to `format_auth_response`.
+- [X] **Task 29: Deploy Phase 24 Fix**
+  - Action: Git add, commit, and push.
