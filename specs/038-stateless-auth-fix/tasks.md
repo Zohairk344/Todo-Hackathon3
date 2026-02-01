@@ -112,3 +112,14 @@
   - Action: Add `image` and `emailVerified` fields to `format_auth_response`.
 - [X] **Task 29: Deploy Phase 24 Fix**
   - Action: Git add, commit, and push.
+
+## Phase 25: Implement Chat Components
+
+- [X] **Task 30: Create ChatWidget component**
+  - File: `frontend/components/dashboard/chat-widget.tsx`
+  - Action: Implement the chat UI with backend connectivity and auth cookies.
+- [X] **Task 31: Create ClientChatWrapper component**
+  - File: `frontend/components/dashboard/client-chat-wrapper.tsx`
+  - Action: Create a wrapper to handle router refresh on chat updates.
+- [X] **Task 32: Deploy Phase 25 Fix**
+  - Action: Git add, commit, and push.
