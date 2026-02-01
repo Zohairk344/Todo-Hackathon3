@@ -1,0 +1,71 @@
+openapi: 3.0.0
+info:
+  title: Chat & Auth API
+  version: 1.0.0
+paths:
+  /api/auth/sign-out:
+    post:
+      summary: Sign out user and clear cookies
+      responses:
+        '200':
+          description: Successfully signed out
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: session_token=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=None
+  
+  /api/{userId}/chat:
+    get:
+      summary: Get chat history
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    role:
+                      type: string
+                      enum: [user, assistant]
+                    content:
+                      type: string
+    post:
+      summary: Send message to AI
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                conversationId:
+                  type: integer
+      responses:
+        '200':
+          description: AI response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                  conversationId:
+                    type: integer
