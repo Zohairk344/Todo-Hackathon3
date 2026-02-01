@@ -116,7 +116,7 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
       <div className="p-4 bg-card border-t border-border">
         <div className="flex gap-2 relative">
           <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), handleSend())} placeholder="Type a message..." disabled={isLoading} className="flex-1 p-3 pr-12 rounded-xl border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring" />
-          <button onClick={handleSend} disabled={!input.trim() || isLoading} className="absolute right-2 top-2 p-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"><Send size={18} /></button>
+          <button onClick={() => handleSend()} disabled={!input.trim() || isLoading} className="absolute right-2 top-2 p-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50"><Send size={18} /></button>
         </div>
       </div>
     </div>
