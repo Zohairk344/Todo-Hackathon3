@@ -221,6 +221,8 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 - LocalStorage (client-side theme state) (037-theme-reset)
 - Next.js 14+ (App Router), TypeScript 5+, Python 3.10+ (Backend) + `next/headers`, `next/navigation`, `better-auth` (backend) (040-fix-dashboard-session)
 - Neon (PostgreSQL) via SQLModel (040-fix-dashboard-session)
+- TypeScript 5+, Next.js 14+ (App Router) + React Context API, Lucide React (for UI) (041-client-side-auth)
+- Client-side state (Context), Backend (PostgreSQL) (041-client-side-auth)
 
 ## Recent Changes
 - 023-implement-mcp-server: Added Python 3.10+

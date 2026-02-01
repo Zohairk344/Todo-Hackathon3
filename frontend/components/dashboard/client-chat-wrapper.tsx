@@ -1,8 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { ChatWidget } from "./chat-widget";
+import { useAuth } from "@/context/auth-context";
 
-export function ClientChatWrapper({ userId }: { userId: string }) {
+export function ClientChatWrapper() {
   const router = useRouter();
-  return <ChatWidget userId={userId} onTasksChange={() => router.refresh()} />;
+  const { user } = useAuth();
+
+  if (!user) return null;
+
+  return <ChatWidget userId={user.id} onTasksChange={() => router.refresh()} />;
 }
