@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { api, CreateTaskData } from "@/lib/api";
+import { useTasks } from "@/context/tasks-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,15 +13,15 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { CategoryPicker } from "@/components/category-picker";
 
 interface AddTaskFormProps {
-  user_id: string;
+  user_id: string; // Keep for now to avoid breaking parent components, though we could use useAuth
 }
 
 export function AddTaskForm({ user_id }: AddTaskFormProps) {
+  const { addTask } = useTasks();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -30,32 +29,28 @@ export function AddTaskForm({ user_id }: AddTaskFormProps) {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [dueDate, setDueDate] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const taskData: CreateTaskData = {
+      await addTask({
         title,
         description,
         priority,
-        categoryId: categoryId,
-        dueDate: dueDate || null,
-      };
+        categoryId: categoryId || undefined,
+        due_date: dueDate || undefined,
+      });
       
-      await api.createTask(user_id, taskData);
-      toast.success("Task created");
       setOpen(false);
       setTitle("");
       setDescription("");
       setPriority("MEDIUM");
       setCategoryId(null);
       setDueDate("");
-      router.refresh(); 
     } catch (error) {
-      toast.error("Failed to create task");
+      // toast is handled in context
     } finally {
       setLoading(false);
     }

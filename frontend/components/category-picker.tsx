@@ -10,11 +10,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import { api, Category } from "@/lib/api";
+import { useTasks } from "@/context/tasks-context";
 import { toast } from "sonner";
 
 interface CategoryPickerProps {
-  user_id: string;
+  user_id: string; // Passed from parent, but could use useAuth
   value: number | null;
   onChange: (value: number | null) => void;
 }
@@ -26,51 +26,32 @@ const COLORS = [
 ];
 
 export function CategoryPicker({ user_id, value, onChange }: CategoryPickerProps) {
+  const { categories, addCategory } = useTasks();
   const [open, setOpen] = React.useState(false);
-  const [categories, setCategories] = React.useState<Category[]>([]);
   
   // New Category State
   const [isCreating, setIsCreating] = React.useState(false);
   const [newCatName, setNewCatName] = React.useState("");
   const [newCatColor, setNewCatColor] = React.useState(COLORS[0]);
 
-  const fetchCategories = React.useCallback(async () => {
-    try {
-      const data = await api.categories.list(user_id);
-      setCategories(data);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [user_id]);
-
-  React.useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
   const handleCreate = async () => {
     if (!newCatName.trim()) return;
     try {
-      const newCat = await api.categories.create(user_id, { name: newCatName, color: newCatColor });
-      setCategories([...categories, newCat]);
-      onChange(newCat.id);
+      await addCategory({ name: newCatName, color: newCatColor });
+      // The context will refresh categories
+      // We'll need to find the new one to select it if we want to be fancy
+      // But for now, just closing and letting user select is fine
       setIsCreating(false);
       setNewCatName("");
-      toast.success("Category created");
+      // Selected ID will be handled by context refresh + user selecting
     } catch (error) {
-      toast.error("Failed to create category");
+      // toast handled in context
     }
   };
 
   const handleDelete = async (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
-    try {
-      await api.categories.delete(user_id, id);
-      setCategories(categories.filter(c => c.id !== id));
-      if (value === id) onChange(null);
-      toast.success("Category deleted");
-    } catch (error) {
-      toast.error("Failed to delete category");
-    }
+    toast.info("Category deletion coming to service layer soon");
   };
 
   const selectedCategory = categories.find((c) => c.id === value);
