@@ -40,7 +40,7 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">Fetching tasks...</p>
         </div>
       ) : (
-        <TaskList initialTasks={tasks} user_id={user.id} />
+        <TaskList user_id={user.id} />
       )}
     </div>
   );
