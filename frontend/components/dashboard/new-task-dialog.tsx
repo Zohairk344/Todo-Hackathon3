@@ -4,7 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Category, Task } from "@/services/todo-service";
 
 interface NewTaskDialogProps {
@@ -63,30 +65,28 @@ export function NewTaskDialog({ isOpen, onClose, categories, onConfirm }: NewTas
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right">Category</Label>
-            <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select Category" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id.toString()}>{cat.name}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
+            <select 
+              value={categoryId} 
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+                <option value="none">Select Category</option>
+                {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
+                ))}
+            </select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right">Priority</Label>
-            <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="LOW">Low</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="HIGH">High</SelectItem>
-                </SelectContent>
-            </Select>
+            <select 
+              value={priority} 
+              onChange={(e) => setPriority(e.target.value)}
+              className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+            </select>
           </div>
         </div>
         <DialogFooter>
