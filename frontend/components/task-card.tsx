@@ -1,6 +1,6 @@
 "use client";
 
-import { Task } from "@/lib/api";
+import { Task } from "@/services/todo-service";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +10,8 @@ import { format, isPast, isToday } from "date-fns";
 
 interface TaskCardProps {
   task: Task;
-  onToggle: (taskId: number) => void;
-  onDelete: (taskId: number) => void;
+  onToggle: (taskId: string) => void;
+  onDelete: (taskId: string) => void;
   onEdit: (task: Task) => void;
 }
 
@@ -22,14 +22,14 @@ const priorityColor: Record<string, string> = {
 };
 
 export function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
-  const isOverdue = task.dueDate && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate)) && !task.completed;
+  const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && task.status !== "completed";
 
   return (
     <Card className="relative group transition-all hover:shadow-md flex flex-col">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Badge className={cn("px-1.5 py-0 text-[10px]", priorityColor[task.priority])}>
+            <Badge className={cn("px-1.5 py-0 text-[10px]", priorityColor[task.priority || "MEDIUM"])}>
               {task.priority}
             </Badge>
             {task.category && (
@@ -77,10 +77,10 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
       </CardContent>
       <CardFooter className="pt-0 flex justify-between items-center">
         <div className="flex items-center gap-2 text-xs">
-          {task.dueDate && (
+          {task.due_date && (
             <div className={cn("flex items-center gap-1", isOverdue ? "text-red-600 font-medium" : "text-muted-foreground")}>
               <Calendar className="h-3 w-3" />
-              <span>{format(new Date(task.dueDate), "MMM d")}</span>
+              <span>{format(new Date(task.due_date), "MMM d")}</span>
             </div>
           )}
         </div>
@@ -88,12 +88,12 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
           onClick={() => onToggle(task.id)}
           className={cn(
             "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            task.completed
+            task.status === "completed"
               ? "bg-green-100 text-green-800 hover:bg-green-200"
               : "bg-gray-100 text-gray-800 hover:bg-gray-200"
           )}
         >
-          {task.completed ? "Completed" : "Mark Done"}
+          {task.status === "completed" ? "Completed" : "Mark Done"}
         </button>
       </CardFooter>
     </Card>

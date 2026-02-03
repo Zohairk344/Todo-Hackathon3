@@ -117,7 +117,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
               </Label>
               <div className="col-span-3">
                 <CategoryPicker 
-                    user_id={task.userId} 
+                    user_id={task.userId || ""} 
                     value={categoryId} 
                     onChange={setCategoryId} 
                 />

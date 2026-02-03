@@ -8,6 +8,7 @@ export interface Task {
   priority?: "LOW" | "MEDIUM" | "HIGH";
   due_date?: string;
   categoryId?: number;
+  category?: Category;
   // Adding userId and createdAt to match typical backend response if needed
   userId?: string;
   created_at?: string;
