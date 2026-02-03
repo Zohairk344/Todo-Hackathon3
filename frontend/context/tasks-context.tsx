@@ -12,6 +12,7 @@ interface TasksContextType {
   addTask: (data: Partial<Task>) => Promise<void>;
   addCategory: (data: { name: string; color: string }) => Promise<void>;
   updateTaskStatus: (taskId: string, status: string) => Promise<void>;
+  updateTask: (taskId: string, data: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
 }
 
@@ -79,14 +80,28 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
      
      // Optimistic update
      const originalTasks = [...tasks];
-     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: status as any } : t));
+     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: status as Task["status"] } : t));
      
      try {
-        await todoService.updateTask(user.id, taskId, { status: status as any });
-     } catch (e) {
+        await todoService.updateTask(user.id, taskId, { status: status as Task["status"] });
+     } catch (error) {
+        console.error("Failed to update status", error);
         toast.error("Failed to update status");
         setTasks(originalTasks); // Revert on failure
      }
+  };
+
+  const updateTask = async (taskId: string, data: Partial<Task>) => {
+    if (!user) return;
+    try {
+        await todoService.updateTask(user.id, taskId, data);
+        await refreshTasks();
+        toast.success("Task updated");
+    } catch (error) {
+        console.error("Failed to update task", error);
+        toast.error("Failed to update task");
+        throw error;
+    }
   };
 
   const deleteTask = async (taskId: string) => {
@@ -99,14 +114,15 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       try {
         await todoService.deleteTask(user.id, taskId);
         toast.success("Task deleted");
-      } catch (e) {
+      } catch (error) {
+        console.error("Failed to delete task", error);
         toast.error("Failed to delete task");
         setTasks(originalTasks); // Revert
       }
   };
 
   return (
-    <TasksContext.Provider value={{ tasks, categories, isLoading, refreshTasks, addTask, addCategory, updateTaskStatus, deleteTask }}>
+    <TasksContext.Provider value={{ tasks, categories, isLoading, refreshTasks, addTask, addCategory, updateTaskStatus, updateTask, deleteTask }}>
       {children}
     </TasksContext.Provider>
   );

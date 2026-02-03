@@ -11,14 +11,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Task, CreateTaskData } from "@/lib/api";
+import { Task } from "@/services/todo-service";
 import { CategoryPicker } from "@/components/category-picker";
 
 interface EditTaskDialogProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: CreateTaskData) => Promise<void>;
+  onSave: (data: Partial<Task>) => Promise<void>;
 }
 
 export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDialogProps) {
@@ -33,11 +33,11 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
     if (task) {
       setTitle(task.title);
       setDescription(task.description || "");
-      setPriority(task.priority);
-      setCategoryId(task.category?.id || null);
+      setPriority(task.priority || "MEDIUM");
+      setCategoryId(task.categoryId || null);
       // Format date for input type="date" (YYYY-MM-DD)
-      if (task.dueDate) {
-        setDueDate(task.dueDate.split('T')[0]);
+      if (task.due_date) {
+        setDueDate(task.due_date.split('T')[0]);
       } else {
         setDueDate("");
       }
@@ -52,8 +52,8 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
         title,
         description,
         priority,
-        categoryId: categoryId,
-        dueDate: dueDate || null
+        categoryId: categoryId || undefined,
+        due_date: dueDate || undefined
       });
       onOpenChange(false);
     } finally {

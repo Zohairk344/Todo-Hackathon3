@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useTasks } from "@/context/tasks-context";
-import { TaskCard } from "./task-card";
-import { toast } from "sonner";
-import { TaskToolbar, FilterStatus } from "./features/task-toolbar";
-import { EditTaskDialog } from "./features/edit-task-dialog";
-import { DashboardStats } from "@/components/dashboard-stats";
+import { TaskCard } from "../task-card";
+import { TaskToolbar, FilterStatus } from "../features/task-toolbar";
+import { EditTaskDialog } from "../features/edit-task-dialog";
+import { DashboardStats } from "../dashboard-stats";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,21 +15,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ClipboardList, Loader2 } from "lucide-react";
-import { Task as ServiceTask } from "@/services/todo-service";
+import { ClipboardList } from "lucide-react";
+import { Task, Category } from "@/services/todo-service";
 
-interface TaskListProps {
-  user_id: string; // Keep for backward compat if needed, but we use context
+interface TaskViewProps {
+  tasks: Task[];
+  categories: Category[];
+  onStatusChange: (taskId: string, status: string) => Promise<void>;
+  onUpdate: (taskId: string, data: Partial<Task>) => Promise<void>;
+  onDelete: (taskId: string) => Promise<void>;
 }
 
 const priorityOrder: Record<string, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
 
-export function TaskList({ user_id }: TaskListProps) {
-  const { tasks, isLoading, updateTaskStatus, deleteTask, refreshTasks } = useTasks();
-
+export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete }: TaskViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
-  const [editingTask, setEditingTask] = useState<ServiceTask | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -39,9 +39,7 @@ export function TaskList({ user_id }: TaskListProps) {
   const handleToggle = async (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
-    
-    // updateTaskStatus handles optimistic update and toast
-    await updateTaskStatus(taskId, task.status === "completed" ? "pending" : "completed");
+    await onStatusChange(taskId, task.status === "completed" ? "pending" : "completed");
   };
 
   const handleDeleteClick = (taskId: string) => {
@@ -52,34 +50,19 @@ export function TaskList({ user_id }: TaskListProps) {
   const handleConfirmDelete = async () => {
     if (deleteId === null) return;
     setIsDeleteDialogOpen(false); 
-    await deleteTask(deleteId);
+    await onDelete(deleteId);
     setDeleteId(null);
   };
 
-  const handleCleanup = async () => {
-    // Note: todo-service.ts currently doesn't have cleanup, 
-    // we could add it or just loop deletes, but let's assume it's a future task
-    // for now we just toast
-    toast.info("Cleanup feature coming soon to service layer");
-  };
-
-  const handleEdit = (task: ServiceTask) => {
+  const handleEdit = (task: Task) => {
     setEditingTask(task);
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = async (data: any) => {
+  const handleSaveEdit = async (data: Partial<Task>) => {
     if (!editingTask) return;
-    try {
-        // We'd ideally have an updateTask in context too
-        // For now let's just use the service directly if needed, or add to context
-        // Adding it to context is better. 
-        toast.info("Edit saving...");
-        // Placeholder for context updateTask
-        setIsEditDialogOpen(false);
-    } catch (error) {
-      toast.error("Failed to update task");
-    }
+    await onUpdate(editingTask.id, data);
+    setIsEditDialogOpen(false);
   };
 
   const filteredTasks = tasks.filter((task) => {
@@ -110,29 +93,20 @@ export function TaskList({ user_id }: TaskListProps) {
 
   const completedCount = tasks.filter(t => t.status === "completed").length;
 
-  if (isLoading && tasks.length === 0) {
-      return (
-          <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-              <p className="text-muted-foreground">Loading tasks...</p>
-          </div>
-      );
-  }
-
   return (
     <div className="space-y-6">
-      <DashboardStats tasks={tasks as any} />
+      <DashboardStats tasks={tasks} />
       <TaskToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         filterStatus={filterStatus}
         onFilterChange={setFilterStatus}
-        onCleanup={handleCleanup}
+        onCleanup={() => {}} // Placeholder
         canCleanup={completedCount > 0}
       />
 
       {tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed rounded-lg bg-muted/10 min-h-75">
+        <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed rounded-lg bg-muted/10 min-h-[300px]">
           <div className="bg-background p-4 rounded-full mb-4 shadow-sm">
             <ClipboardList className="h-10 w-10 text-muted-foreground" />
           </div>
@@ -142,7 +116,7 @@ export function TaskList({ user_id }: TaskListProps) {
           </p>
         </div>
       ) : sortedTasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg bg-background min-h-50">
+        <div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg bg-background min-h-[200px]">
           <p className="text-muted-foreground">No tasks match your filters.</p>
           <button 
             onClick={() => { setSearchQuery(""); setFilterStatus("all"); }}
@@ -156,7 +130,7 @@ export function TaskList({ user_id }: TaskListProps) {
           {sortedTasks.map((task) => (
             <TaskCard
               key={task.id}
-              task={task as any}
+              task={task}
               onToggle={() => handleToggle(task.id)}
               onDelete={() => handleDeleteClick(task.id)}
               onEdit={() => handleEdit(task)}
@@ -166,7 +140,7 @@ export function TaskList({ user_id }: TaskListProps) {
       )}
 
       <EditTaskDialog 
-        task={editingTask as any}
+        task={editingTask}
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         onSave={handleSaveEdit}
