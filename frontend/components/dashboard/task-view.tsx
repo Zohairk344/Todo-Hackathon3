@@ -1,167 +1,112 @@
 "use client";
 
 import { useState } from "react";
-import { TaskCard } from "../task-card";
-import { TaskToolbar, FilterStatus } from "../features/task-toolbar";
-import { EditTaskDialog } from "../features/edit-task-dialog";
-import { DashboardStats } from "../dashboard-stats";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { ClipboardList } from "lucide-react";
 import { Task, Category } from "@/services/todo-service";
+import { format } from "date-fns";
+import { CheckCircle2, Circle, Trash2, Calendar, Tag } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 interface TaskViewProps {
   tasks: Task[];
   categories: Category[];
-  onStatusChange: (taskId: string, status: string) => Promise<void>;
-  onUpdate: (taskId: string, data: Partial<Task>) => Promise<void>;
-  onDelete: (taskId: string) => Promise<void>;
+  onStatusChange: (id: string, status: string) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 }
 
-const priorityOrder: Record<string, number> = { HIGH: 3, MEDIUM: 2, LOW: 1 };
+export function TaskView({ tasks, categories, onStatusChange, onDelete }: TaskViewProps) {
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
-export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete }: TaskViewProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
-  const handleToggle = async (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-    await onStatusChange(taskId, task.status === "completed" ? "pending" : "completed");
-  };
-
-  const handleDeleteClick = (taskId: string) => {
-    setDeleteId(taskId);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (deleteId === null) return;
-    setIsDeleteDialogOpen(false); 
-    await onDelete(deleteId);
-    setDeleteId(null);
-  };
-
-  const handleEdit = (task: Task) => {
-    setEditingTask(task);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleSaveEdit = async (data: Partial<Task>) => {
-    if (!editingTask) return;
-    await onUpdate(editingTask.id, data);
-    setIsEditDialogOpen(false);
-  };
-
-  const filteredTasks = tasks.filter((task) => {
-    const matchesSearch =
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
-    
-    const isCompleted = task.status === "completed";
-    if (filterStatus === "pending") return matchesSearch && !isCompleted;
-    if (filterStatus === "completed") return matchesSearch && isCompleted;
-    return matchesSearch;
+  const filteredTasks = tasks.filter(task => {
+    const matchesSearch = task.title.toLowerCase().includes(search.toLowerCase());
+    const matchesFilter = filter === "all" 
+      ? true 
+      : filter === "pending" 
+        ? task.status !== "completed" 
+        : task.status === filter;
+    return matchesSearch && matchesFilter;
   });
 
-  const sortedTasks = [...filteredTasks].sort((a, b) => {
-    const aCompleted = a.status === "completed";
-    const bCompleted = b.status === "completed";
-    if (aCompleted !== bCompleted) return aCompleted ? 1 : -1;
+  const getCategoryName = (id?: number | null) => {
+    if (!id) return null;
+    return categories.find(c => c.id === id)?.name;
+  };
 
-    if (a.priority !== b.priority) {
-        return (priorityOrder[b.priority || "MEDIUM"] || 0) - (priorityOrder[a.priority || "MEDIUM"] || 0);
-    }
-
-    if (!a.due_date && !b.due_date) return 0;
-    if (!a.due_date) return 1;
-    if (!b.due_date) return -1;
-    return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
-  });
-
-  const completedCount = tasks.filter(t => t.status === "completed").length;
+  const getCategoryColor = (id?: number | null) => {
+    if (!id) return "gray";
+    return categories.find(c => c.id === id)?.color || "gray";
+  };
 
   return (
-    <div className="space-y-6">
-      <DashboardStats tasks={tasks} />
-      <TaskToolbar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        filterStatus={filterStatus}
-        onFilterChange={setFilterStatus}
-        onCleanup={() => {}} // Placeholder
-        canCleanup={completedCount > 0}
-      />
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <Input 
+          placeholder="Search tasks..." 
+          value={search} 
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-xs"
+        />
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      {tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed rounded-lg bg-muted/10 min-h-[300px]">
-          <div className="bg-background p-4 rounded-full mb-4 shadow-sm">
-            <ClipboardList className="h-10 w-10 text-muted-foreground" />
-          </div>
-          <h3 className="mt-2 text-lg font-semibold">No tasks yet</h3>
-          <p className="mb-6 text-sm text-muted-foreground max-w-sm">
-            You&apos;re all caught up! Create your first task to get started and track your progress.
-          </p>
-        </div>
-      ) : sortedTasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg bg-background min-h-[200px]">
-          <p className="text-muted-foreground">No tasks match your filters.</p>
-          <button 
-            onClick={() => { setSearchQuery(""); setFilterStatus("all"); }}
-            className="mt-2 text-sm text-primary hover:underline"
-          >
-            Clear filters
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedTasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onToggle={() => handleToggle(task.id)}
-              onDelete={() => handleDeleteClick(task.id)}
-              onEdit={() => handleEdit(task)}
-            />
-          ))}
-        </div>
-      )}
-
-      <EditTaskDialog 
-        task={editingTask}
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        onSave={handleSaveEdit}
-      />
-
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the task.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <div className="space-y-2">
+        {filteredTasks.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
+                No tasks found.
+            </div>
+        ) : (
+            filteredTasks.map((task) => (
+              <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => onStatusChange(task.id, task.status === "completed" ? "pending" : "completed")}
+                    className={task.status === "completed" ? "text-primary" : "text-muted-foreground hover:text-primary"}
+                  >
+                    {task.status === "completed" ? <CheckCircle2 /> : <Circle />}
+                  </button>
+                  
+                  <div className="space-y-1">
+                    <p className={`font-medium ${task.status === "completed" ? "line-through text-muted-foreground" : ""}`}>
+                      {task.title}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {task.priority !== "MEDIUM" && (
+                            <Badge variant={task.priority === "HIGH" ? "destructive" : "secondary"} className="h-5 px-1.5">
+                                {task.priority}
+                            </Badge>
+                        )}
+                        {task.category_id && (
+                            <span className="flex items-center gap-1" style={{ color: getCategoryColor(task.category_id) }}>
+                                <Tag size={12} /> {getCategoryName(task.category_id)}
+                            </span>
+                        )}
+                        {task.due_date && (
+                            <span className="flex items-center gap-1">
+                                <Calendar size={12} /> {format(new Date(task.due_date), "MMM d")}
+                            </span>
+                        )}
+                    </div>
+                  </div>
+                </div>
+                
+                <button onClick={() => onDelete(task.id)} className="text-muted-foreground hover:text-destructive p-2">
+                    <Trash2 size={18} />
+                </button>
+              </div>
+            ))
+        )}
+      </div>
     </div>
   );
 }

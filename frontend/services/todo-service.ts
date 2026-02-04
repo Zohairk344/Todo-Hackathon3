@@ -3,22 +3,21 @@ import { apiRequest } from "@/lib/api-client";
 export interface Task {
   id: string;
   title: string;
-  description?: string;
-  status?: "pending" | "in-progress" | "completed";
-  priority?: "LOW" | "MEDIUM" | "HIGH";
-  due_date?: string;
-  categoryId?: number;
+  description?: string | null;
+  status: "pending" | "in-progress" | "completed";
+  priority: "LOW" | "MEDIUM" | "HIGH";
+  due_date?: string | null;
+  created_at: string;
+  updated_at: string;
+  category_id?: number | null;
+  category_name?: string | null; 
   category?: Category;
-  // Adding userId and createdAt to match typical backend response if needed
-  userId?: string;
-  created_at?: string;
 }
 
 export interface Category {
   id: number;
   name: string;
   color: string;
-  userId?: string;
 }
 
 export const todoService = {

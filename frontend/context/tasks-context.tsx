@@ -12,7 +12,6 @@ interface TasksContextType {
   addTask: (data: Partial<Task>) => Promise<void>;
   addCategory: (data: { name: string; color: string }) => Promise<void>;
   updateTaskStatus: (taskId: string, status: string) => Promise<void>;
-  updateTask: (taskId: string, data: Partial<Task>) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
 }
 
@@ -25,7 +24,9 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const refreshTasks = useCallback(async () => {
-    if (!user) return;
+    // STRICT GUARD: Do not attempt fetch if user/id is missing. Prevents 401s.
+    if (!user || !user.id) return;
+    
     setIsLoading(true);
     try {
       const [fetchedTasks, fetchedCategories] = await Promise.all([
@@ -34,29 +35,30 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       ]);
       setTasks(fetchedTasks);
       setCategories(fetchedCategories);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to load data", error);
-      // Don't toast on initial load error to avoid spam, or make it subtle
+      if (error instanceof Error && error.message === "Unauthorized") {
+        toast.error("Session Expired. Please login again.");
+        // Redirect logic can be added here or handled globally
+      }
     } finally {
       setIsLoading(false);
     }
   }, [user]);
 
+  // Initial Fetch only when USER exists
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
         refreshTasks();
-    } else {
-        setTasks([]);
-        setCategories([]);
     }
   }, [user, refreshTasks]);
 
   const addTask = async (data: Partial<Task>) => {
-    if (!user) return;
+    if (!user?.id) return;
     try {
         await todoService.createTask(user.id, data);
         await refreshTasks();
-        toast.success("Task created");
+        toast.success("Task created and synced"); // US2: Confirmation
     } catch (e) {
         toast.error("Failed to create task");
         throw e;
@@ -64,7 +66,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addCategory = async (data: { name: string; color: string }) => {
-    if (!user) return;
+    if (!user?.id) return;
     try {
         await todoService.createCategory(user.id, data);
         await refreshTasks();
@@ -76,53 +78,30 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   };
   
   const updateTaskStatus = async (taskId: string, status: string) => {
-     if (!user) return;
-     
+     if (!user?.id) return;
      // Optimistic update
-     const originalTasks = [...tasks];
      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: status as Task["status"] } : t));
-     
      try {
         await todoService.updateTask(user.id, taskId, { status: status as Task["status"] });
-     } catch (error) {
-        console.error("Failed to update status", error);
+     } catch (e) {
         toast.error("Failed to update status");
-        setTasks(originalTasks); // Revert on failure
+        refreshTasks(); 
      }
   };
 
-  const updateTask = async (taskId: string, data: Partial<Task>) => {
-    if (!user) return;
-    try {
-        await todoService.updateTask(user.id, taskId, data);
-        await refreshTasks();
-        toast.success("Task updated");
-    } catch (error) {
-        console.error("Failed to update task", error);
-        toast.error("Failed to update task");
-        throw error;
-    }
-  };
-
   const deleteTask = async (taskId: string) => {
-      if (!user) return;
-      
-      // Optimistic update
-      const originalTasks = [...tasks];
-      setTasks(prev => prev.filter(t => t.id !== taskId));
-
+      if (!user?.id) return;
       try {
         await todoService.deleteTask(user.id, taskId);
+        setTasks(prev => prev.filter(t => t.id !== taskId));
         toast.success("Task deleted");
-      } catch (error) {
-        console.error("Failed to delete task", error);
+      } catch (e) {
         toast.error("Failed to delete task");
-        setTasks(originalTasks); // Revert
       }
   };
 
   return (
-    <TasksContext.Provider value={{ tasks, categories, isLoading, refreshTasks, addTask, addCategory, updateTaskStatus, updateTask, deleteTask }}>
+    <TasksContext.Provider value={{ tasks, categories, isLoading, refreshTasks, addTask, addCategory, updateTaskStatus, deleteTask }}>
       {children}
     </TasksContext.Provider>
   );

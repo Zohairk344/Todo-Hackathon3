@@ -223,6 +223,7 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 - Neon (PostgreSQL) via SQLModel (040-fix-dashboard-session)
 - TypeScript 5+, Next.js 14+ (App Router) + React Context API, Lucide React (for UI) (041-client-side-auth)
 - Client-side state (Context), Backend (PostgreSQL) (041-client-side-auth)
+- TypeScript 5+, Next.js 16.1.1 (Frontend) / Python 3.10+ (Backend) + React Context, Radix UI, Lucide React, FastAPI (044-fix-dashboard-sync)
 
 ## Recent Changes
 - 023-implement-mcp-server: Added Python 3.10+
