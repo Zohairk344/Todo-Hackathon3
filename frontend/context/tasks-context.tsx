@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { useAuth } from "./auth-context";
 import { todoService, Task, Category } from "@/services/todo-service";
 import { toast } from "sonner"; 
+import { Loader2 } from "lucide-react";
 
 interface TasksContextType {
   tasks: Task[];
@@ -18,14 +19,14 @@ interface TasksContextType {
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
 
 export function TasksProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const refreshTasks = useCallback(async () => {
-    // STRICT GUARD: Do not attempt fetch if user/id is missing. Prevents 401s.
-    if (!user || !user.id) return;
+    // STRICT GUARD: Do not attempt fetch if user/id is missing or auth is loading. Prevents 401s.
+    if (authLoading || !user?.id) return;
     
     setIsLoading(true);
     try {
@@ -39,26 +40,25 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       console.error("Failed to load data", error);
       if (error instanceof Error && error.message === "Unauthorized") {
         toast.error("Session Expired. Please login again.");
-        // Redirect logic can be added here or handled globally
       }
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
-  // Initial Fetch only when USER exists
+  // Initial Fetch only when USER exists and Auth is done
   useEffect(() => {
-    if (user?.id) {
+    if (!authLoading && user?.id) {
         refreshTasks();
     }
-  }, [user, refreshTasks]);
+  }, [authLoading, user, refreshTasks]);
 
   const addTask = async (data: Partial<Task>) => {
-    if (!user?.id) return;
+    if (authLoading || !user?.id) return;
     try {
         await todoService.createTask(user.id, data);
         await refreshTasks();
-        toast.success("Task created and synced"); // US2: Confirmation
+        toast.success("Task created and synced"); 
     } catch (e) {
         toast.error("Failed to create task");
         throw e;
@@ -66,7 +66,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addCategory = async (data: { name: string; color: string }) => {
-    if (!user?.id) return;
+    if (authLoading || !user?.id) return;
     try {
         await todoService.createCategory(user.id, data);
         await refreshTasks();
@@ -78,7 +78,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   };
   
   const updateTaskStatus = async (taskId: string, status: string) => {
-     if (!user?.id) return;
+     if (authLoading || !user?.id) return;
      // Optimistic update
      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: status as Task["status"] } : t));
      try {
@@ -90,7 +90,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteTask = async (taskId: string) => {
-      if (!user?.id) return;
+      if (authLoading || !user?.id) return;
       try {
         await todoService.deleteTask(user.id, taskId);
         setTasks(prev => prev.filter(t => t.id !== taskId));
@@ -99,6 +99,20 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
         toast.error("Failed to delete task");
       }
   };
+
+  // THE GATE: Block rendering until Auth is ready.
+  if (authLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Strict null check: if authLoading is false but user is null, return null (rendering nothing).
+  if (!user) {
+    return null;
+  }
 
   return (
     <TasksContext.Provider value={{ tasks, categories, isLoading, refreshTasks, addTask, addCategory, updateTaskStatus, deleteTask }}>
