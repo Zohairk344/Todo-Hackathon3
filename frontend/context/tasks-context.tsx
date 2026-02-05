@@ -13,6 +13,7 @@ interface TasksContextType {
   addTask: (data: Partial<Task>) => Promise<void>;
   addCategory: (data: { name: string; color: string }) => Promise<void>;
   updateTaskStatus: (taskId: string, status: string) => Promise<void>;
+  updateTask: (taskId: string, data: Partial<Task>) => Promise<void>; // <--- This fixes the error
   deleteTask: (taskId: string) => Promise<void>;
 }
 
@@ -89,6 +90,19 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
      }
   };
 
+  const updateTask = async (taskId: string, data: Partial<Task>) => {
+     if (authLoading || !user?.id) return;
+     // Optimistic update
+     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...data } : t));
+     try {
+        await todoService.updateTask(user.id, taskId, data);
+        toast.success("Task updated");
+     } catch (e) {
+        toast.error("Failed to update task");
+        refreshTasks(); 
+     }
+  };
+
   const deleteTask = async (taskId: string) => {
       if (authLoading || !user?.id) return;
       try {
@@ -115,7 +129,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <TasksContext.Provider value={{ tasks, categories, isLoading, refreshTasks, addTask, addCategory, updateTaskStatus, deleteTask }}>
+    <TasksContext.Provider value={{ tasks, categories, isLoading, refreshTasks, addTask, addCategory, updateTaskStatus, updateTask, deleteTask }}>
       {children}
     </TasksContext.Provider>
   );
