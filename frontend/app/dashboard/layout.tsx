@@ -8,6 +8,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
+    <div>
     <TasksProvider>
       <div className="flex min-h-screen flex-col bg-background">
           {/* Header with Centering Container */}
