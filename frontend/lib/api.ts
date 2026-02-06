@@ -12,9 +12,9 @@ export async function apiRequest<T>(
   const token = typeof window !== 'undefined' ? localStorage.getItem("auth_token") : null;
 
   // 2. Attach to Headers
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...options.headers as any,
+    ...(options.headers as Record<string, string>),
   };
 
   if (token) {
