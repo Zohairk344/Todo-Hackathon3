@@ -1,3 +1,44 @@
+---
+id: 0009
+title: fix-task-view-build
+stage: refactor
+date: 2026-02-06
+surface: agent
+model: gemini-2.0-flash-thinking-exp
+feature: 045-auth-gate-tasks
+branch: main
+user: zohair
+command: /sp.implement
+labels: ["bugfix", "frontend", "build-fix"]
+links:
+  spec: null
+  ticket: null
+  adr: null
+  pr: null
+files:
+ - frontend/components/dashboard/task-view.tsx
+ - frontend/components/features/edit-task-dialog.tsx
+tests:
+ - npm run build
+---
+
+## Prompt
+
+/sp.implement
+
+**Context:**
+Fixing a Vercel Build Error. `TaskView` is rejecting the `onUpdate` prop because it is missing from the TypeScript interface. We will add the prop to the interface and the component.
+
+**Directives:**
+1.  **Action:** Overwrite `frontend/components/dashboard/task-view.tsx`.
+2.  **Verification:** The `npm run build` command will pass.
+
+---
+
+### **Task 1: Update TaskView Interface (`frontend/components/dashboard/task-view.tsx`)**
+**Action:** Overwrite completely.
+**Key Change:** Added `onUpdate` to `TaskViewProps` and the component arguments.
+```tsx
 "use client";
 
 import { useState } from "react";
@@ -118,3 +159,23 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
     </div>
   );
 }
+```
+
+## Response snapshot
+
+Fixed TaskView missing onUpdate prop and EditTaskDialog type errors. Verified with npm run build.
+
+## Outcome
+
+- ✅ Impact: Fixed build errors blocking deployment.
+- 🧪 Tests: Build passed.
+- 📁 Files: Modified TaskView and EditTaskDialog.
+- 🔁 Next prompts: None.
+- 🧠 Reflection: Fixed dependent type error in EditTaskDialog discovered during build.
+
+## Evaluation notes (flywheel)
+
+- Failure modes observed: None.
+- Graders run and results (PASS/FAIL): PASS.
+- Prompt variant (if applicable): N/A
+- Next experiment (smallest change to try): N/A

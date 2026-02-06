@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Task } from "@/services/todo-service";
 import { CategoryPicker } from "@/components/category-picker";
+import { useAuth } from "@/context/auth-context";
 
 interface EditTaskDialogProps {
   task: Task | null;
@@ -22,6 +23,7 @@ interface EditTaskDialogProps {
 }
 
 export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDialogProps) {
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<"HIGH" | "MEDIUM" | "LOW">("MEDIUM");
@@ -34,7 +36,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
       setTitle(task.title);
       setDescription(task.description || "");
       setPriority(task.priority || "MEDIUM");
-      setCategoryId(task.categoryId || null);
+      setCategoryId(task.category_id || null);
       // Format date for input type="date" (YYYY-MM-DD)
       if (task.due_date) {
         setDueDate(task.due_date.split('T')[0]);
@@ -52,7 +54,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
         title,
         description,
         priority,
-        categoryId: categoryId || undefined,
+        category_id: categoryId || undefined,
         due_date: dueDate || undefined
       });
       onOpenChange(false);
@@ -65,7 +67,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-106.25">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
@@ -117,7 +119,7 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
               </Label>
               <div className="col-span-3">
                 <CategoryPicker 
-                    user_id={task.userId || ""} 
+                    user_id={user?.id || ""} 
                     value={categoryId} 
                     onChange={setCategoryId} 
                 />
