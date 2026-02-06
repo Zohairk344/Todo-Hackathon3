@@ -21,12 +21,12 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://todo-hackathon3.hf.space";
+  // const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://todo-hackathon3.hf.space";
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       setIsLoading(true);
-      fetch(`${API_URL}/api/${userId}/chat`, {
+      fetch(`/api/${userId}/chat`, {
          method: "GET",
          headers: { "Content-Type": "application/json" },
          credentials: "include" 
@@ -41,7 +41,7 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
         .catch(() => {}) 
         .finally(() => setIsLoading(false));
     }
-  }, [isOpen, userId, messages.length, API_URL]);
+  }, [isOpen, userId, messages.length]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -57,7 +57,7 @@ export function ChatWidget({ userId, onTasksChange }: ChatWidgetProps) {
 
     const attemptRequest = async (remaining: number): Promise<void> => {
       try {
-        const res = await fetch(`${API_URL}/api/${userId}/chat`, {
+        const res = await fetch(`/api/${userId}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",

@@ -9,9 +9,9 @@ export function UserNav() {
 
   const handleSignOut = async () => {
     setLoading(true);
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://todo-hackathon3.hf.space";
+    // const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://todo-hackathon3.hf.space";
     try {
-        await fetch(`${API_URL}/api/auth/sign-out`, { method: "POST", credentials: "include" });
+        await fetch(`/api/auth/sign-out`, { method: "POST", credentials: "include" });
         window.location.href = "/sign-in";
     } catch (e) {
         window.location.href = "/sign-in";

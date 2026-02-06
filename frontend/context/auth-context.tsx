@@ -20,12 +20,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://todo-hackathon3.hf.space";
+  // const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://todo-hackathon3.hf.space";
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/auth/get-session`, {
+        const res = await fetch(`/api/auth/get-session`, {
           credentials: "include", // Crucial: Sends cookies from browser
         });
         if (res.ok) {
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
     checkAuth();
-  }, [API_URL, router]);
+  }, [router]);
 
   if (loading) {
     return (
