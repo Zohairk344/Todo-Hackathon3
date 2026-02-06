@@ -1,12 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // 1. The Proxy Rule
   async rewrites() {
     return [
       {
-        source: '/api/:path*', // When the browser requests /api/...
-        destination: 'https://todo-hackathon3.hf.space/api/:path*', // Forward it here
+        source: '/api/:path*',
+        // We added the 'asdadsshu768-' prefix here to match your real backend
+        destination: 'https://asdadsshu768-todo-hackathon3.hf.space/api/:path*', 
       },
     ];
   },
