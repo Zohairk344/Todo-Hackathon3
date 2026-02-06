@@ -1,6 +1,9 @@
 "use client";
+
 import { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { apiRequest } from "@/lib/api";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 interface User {
@@ -12,39 +15,98 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  // const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://todo-hackathon3.hf.space";
+  const pathname = usePathname();
+
+  const checkSession = async () => {
+    try {
+      // Just try to fetch user. The apiRequest automatically attaches the token if it exists.
+      const data = await apiRequest<{ user: User }>("/api/auth/get-session");
+      setUser(data.user);
+    } catch (error) {
+      setUser(null);
+      // Only redirect if trying to access a protected page
+      if (pathname.includes("/dashboard")) {
+         router.push("/sign-in");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch(`/api/auth/get-session`, {
-          credentials: "include", // Crucial: Sends cookies from browser
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          router.push("/sign-in");
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        router.push("/sign-in");
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkAuth();
-  }, [router]);
+    checkSession();
+  }, [pathname]); // Re-check on navigation or initial load
 
-  if (loading) {
+  const signIn = async (email: string, password: string) => {
+    try {
+      // Backend now returns { access_token, user }
+      const formData = new FormData();
+      formData.append("username", email);
+      formData.append("password", password);
+      
+      const response = await fetch("/api/auth/sign-in/email", {
+          method: "POST",
+          body: formData,
+      });
+
+      if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.detail || "Login failed");
+      }
+
+      const data = await response.json();
+      
+      // CRITICAL: Save Token
+      if (data.access_token) {
+          localStorage.setItem("auth_token", data.access_token);
+      }
+
+      setUser(data.user);
+      router.push("/dashboard");
+      toast.success("Welcome back!");
+    } catch (error: any) {
+      toast.error(error.message || "Invalid credentials");
+      throw error;
+    }
+  };
+
+  const signUp = async (email: string, password: string, fullName: string) => {
+    try {
+      await apiRequest("/api/auth/sign-up/email", {
+        method: "POST",
+        body: JSON.stringify({ email, password, full_name: fullName }),
+      });
+      // Auto login after signup
+      await signIn(email, password);
+    } catch (error) {
+      toast.error("Failed to create account");
+      throw error;
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      localStorage.removeItem("auth_token"); // Clear Token
+      setUser(null);
+      router.push("/sign-in");
+      toast.success("Signed out");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  if (loading && pathname.includes("/dashboard")) {
     return (
       <div className="h-screen w-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
@@ -56,10 +118,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  return context;
+};

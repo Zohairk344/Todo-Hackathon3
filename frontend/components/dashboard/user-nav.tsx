@@ -1,20 +1,20 @@
 "use client";
 import { useAuth } from "@/context/auth-context";
-import { LogOut } from "lucide-react";
+import { LogOut, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 export function UserNav() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleSignOut = async () => {
     setLoading(true);
-    // const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://todo-hackathon3.hf.space";
     try {
-        await fetch(`/api/auth/sign-out`, { method: "POST", credentials: "include" });
-        window.location.href = "/sign-in";
+        await signOut();
     } catch (e) {
-        window.location.href = "/sign-in";
+        console.error("Sign out failed", e);
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -31,7 +31,7 @@ export function UserNav() {
             disabled={loading}
             className="flex items-center gap-2 p-2 rounded-md hover:bg-destructive/10 hover:text-destructive transition-colors text-sm font-medium"
         >
-            <LogOut size={20} />
+            {loading ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
         </button>
     </div>
   );

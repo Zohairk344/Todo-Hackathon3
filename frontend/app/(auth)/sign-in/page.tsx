@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -15,28 +15,16 @@ export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { signIn } = useAuth();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data, error } = await authClient.signIn.email({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast.error(error.message || "Failed to sign in");
-        setLoading(false);
-      } else {
-        toast.success("Signed in successfully");
-        router.push("/dashboard");
-        // Keep loading true while redirecting
-      }
-    } catch (err) {
-      toast.error("An unexpected error occurred");
+      await signIn(email, password);
+    } catch (err: any) {
+      // toast.error is handled in auth-context.tsx
       setLoading(false);
     }
   };

@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
@@ -16,27 +14,17 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const { signUp } = useAuth();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    await authClient.signUp.email({
-      email,
-      password,
-      name,
-    }, {
-      onSuccess: () => {
-        toast.success("Account created successfully");
-        router.push("/dashboard");
-        // Keep loading true while redirecting
-      },
-      onError: (ctx) => {
-        toast.error(ctx.error.message || "Failed to sign up");
-        setLoading(false);
-      },
-    });
+    try {
+      await signUp(email, password, name);
+    } catch (err) {
+      setLoading(false);
+    }
   };
 
   return (
