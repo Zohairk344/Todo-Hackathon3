@@ -87,6 +87,7 @@
 
 - [x] T019 Update `updateTaskStatus` signature in `frontend/context/tasks-context.tsx` to match View requirements.
 - [x] T020 Align ID types (String -> Number) in `frontend/components/dashboard/task-view.tsx`.
+- [x] T021 Expose `refreshTasks` in `frontend/context/tasks-context.tsx` for `ClientChatWrapper`.
 
 ---
 

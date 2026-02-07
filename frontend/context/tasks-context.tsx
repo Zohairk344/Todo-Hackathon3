@@ -11,9 +11,10 @@ interface TasksContextType {
   isLoading: boolean;
   addTask: (task: Partial<Task>) => Promise<void>;
   addCategory: (category: Partial<Category>) => Promise<void>;
-  updateTaskStatus: (id: number, status: string) => Promise<void>; // FIXED SIGNATURE
-  updateTask: (id: number, updates: Partial<Task>) => Promise<void>; // FIXED SIGNATURE
-  deleteTask: (id: number) => Promise<void>; // FIXED SIGNATURE
+  updateTaskStatus: (id: number, status: string) => Promise<void>;
+  updateTask: (id: number, updates: Partial<Task>) => Promise<void>;
+  deleteTask: (id: number) => Promise<void>;
+  refreshTasks: () => Promise<void>; // FIXED: Exposed
 }
 
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
@@ -24,7 +25,8 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const refreshData = async () => {
+  // FIXED: Renamed to refreshTasks and added to interface
+  const refreshTasks = async () => {
     if (!user?.id) return;
     setIsLoading(true);
     try {
@@ -43,7 +45,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user?.id) {
-      refreshData();
+      refreshTasks();
     }
   }, [user?.id]);
 
@@ -72,7 +74,6 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // FIXED: Accepts ID and Status
   const updateTaskStatus = async (id: number, status: string) => {
     if (!user?.id) return;
     try {
@@ -82,7 +83,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
       await todoService.updateTask(user.id, id, { status });
     } catch (error) {
       toast.error("Failed to update status");
-      refreshData(); // Revert on error
+      refreshTasks(); // Revert on error
     }
   };
 
@@ -119,6 +120,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
         updateTaskStatus,
         updateTask,
         deleteTask,
+        refreshTasks, // FIXED: Exposed
       }}
     >
       {children}
