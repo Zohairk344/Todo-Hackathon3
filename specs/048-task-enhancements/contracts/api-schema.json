@@ -1,0 +1,85 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Task API Enhancements",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/tasks/{task_id}": {
+      "patch": {
+        "summary": "Update Task (Partial)",
+        "operationId": "update_task",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskRead"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Task not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Priority": {
+        "type": "string",
+        "enum": ["LOW", "MEDIUM", "HIGH"]
+      },
+      "TaskUpdate": {
+        "type": "object",
+        "properties": {
+          "title": { "type": ["string", "null"] },
+          "description": { "type": ["string", "null"] },
+          "completed": { "type": "boolean" },
+          "priority": { "$ref": "#/components/schemas/Priority" },
+          "dueDate": { "type": ["string", "null"], "format": "date-time" },
+          "categoryId": { "type": ["integer", "null"] }
+        }
+      },
+      "TaskRead": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "description": { "type": ["string", "null"] },
+          "completed": { "type": "boolean" },
+          "priority": { "$ref": "#/components/schemas/Priority" },
+          "dueDate": { "type": ["string", "null"], "format": "date-time" },
+          "categoryId": { "type": ["integer", "null"] },
+          "userId": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "title", "completed", "userId", "createdAt", "updatedAt"]
+      }
+    }
+  }
+}

@@ -12,9 +12,9 @@ interface TasksContextType {
   refreshTasks: () => Promise<void>;
   addTask: (data: Partial<Task>) => Promise<void>;
   addCategory: (data: { name: string; color: string }) => Promise<void>;
-  updateTaskStatus: (taskId: string, status: string) => Promise<void>;
-  updateTask: (taskId: string, data: Partial<Task>) => Promise<void>; // <--- This fixes the error
-  deleteTask: (taskId: string) => Promise<void>;
+  updateTaskStatus: (taskId: number) => Promise<void>;
+  updateTask: (taskId: number, data: Partial<Task>) => Promise<void>;
+  deleteTask: (taskId: number) => Promise<void>;
 }
 
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
@@ -78,24 +78,29 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     }
   };
   
-  const updateTaskStatus = async (taskId: string, status: string) => {
+  const updateTaskStatus = async (taskId: number) => {
      if (authLoading || !user?.id) return;
+     const task = tasks.find(t => t.id === taskId);
+     if (!task) return;
+
+     const newStatus = !task.completed;
+
      // Optimistic update
-     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: status as Task["status"] } : t));
+     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: newStatus } : t));
      try {
-        await todoService.updateTask(user.id, taskId, { status: status as Task["status"] });
+        await todoService.updateTask(user.id, taskId.toString(), { completed: newStatus });
      } catch (e) {
         toast.error("Failed to update status");
         refreshTasks(); 
      }
   };
 
-  const updateTask = async (taskId: string, data: Partial<Task>) => {
+  const updateTask = async (taskId: number, data: Partial<Task>) => {
      if (authLoading || !user?.id) return;
      // Optimistic update
      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...data } : t));
      try {
-        await todoService.updateTask(user.id, taskId, data);
+        await todoService.updateTask(user.id, taskId.toString(), data);
         toast.success("Task updated");
      } catch (e) {
         toast.error("Failed to update task");
@@ -103,10 +108,10 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
      }
   };
 
-  const deleteTask = async (taskId: string) => {
+  const deleteTask = async (taskId: number) => {
       if (authLoading || !user?.id) return;
       try {
-        await todoService.deleteTask(user.id, taskId);
+        await todoService.deleteTask(user.id, taskId.toString());
         setTasks(prev => prev.filter(t => t.id !== taskId));
         toast.success("Task deleted");
       } catch (e) {

@@ -12,12 +12,12 @@ import { Button } from "@/components/ui/button";
 interface TaskViewProps {
   tasks: Task[];
   categories: Category[];
-  onStatusChange: (id: string, status: string) => Promise<void>;
-  onUpdate: (id: string, data: Partial<Task>) => Promise<void>; // <--- Fixed: Added missing prop
-  onDelete: (id: string) => Promise<void>;
+  onToggleStatus: (id: number) => Promise<void>;
+  onUpdate: (id: number, data: Partial<Task>) => Promise<void>;
+  onDelete: (id: number) => Promise<void>;
 }
 
-export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete }: TaskViewProps) {
+export function TaskView({ tasks, categories, onToggleStatus, onUpdate, onDelete }: TaskViewProps) {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -26,8 +26,8 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
     const matchesFilter = filter === "all" 
       ? true 
       : filter === "pending" 
-        ? task.status !== "completed" 
-        : task.status === filter;
+        ? !task.completed
+        : task.completed;
     return matchesSearch && matchesFilter;
   });
 
@@ -39,6 +39,12 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
   const getCategoryColor = (id?: number | null) => {
     if (!id) return "gray";
     return categories.find(c => c.id === id)?.color || "gray";
+  };
+
+  const priorityColors = {
+    HIGH: "bg-red-500 hover:bg-red-600",
+    MEDIUM: "bg-yellow-500 hover:bg-yellow-600",
+    LOW: "bg-green-500 hover:bg-green-600",
   };
 
   return (
@@ -70,32 +76,43 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
         ) : (
             filteredTasks.map((task) => (
               <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-muted/50 transition-colors group">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 grow">
                   <button 
-                    onClick={() => onStatusChange(task.id, task.status === "completed" ? "pending" : "completed")}
-                    className={task.status === "completed" ? "text-primary" : "text-muted-foreground hover:text-primary"}
+                    onClick={() => onToggleStatus(task.id)}
+                    className={task.completed ? "text-primary" : "text-muted-foreground hover:text-primary"}
                   >
-                    {task.status === "completed" ? <CheckCircle2 /> : <Circle />}
+                    {task.completed ? <CheckCircle2 /> : <Circle />}
                   </button>
                   
-                  <div className="space-y-1">
-                    <p className={`font-medium ${task.status === "completed" ? "line-through text-muted-foreground" : ""}`}>
-                      {task.title}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {task.priority !== "MEDIUM" && (
-                            <Badge variant={task.priority === "HIGH" ? "destructive" : "secondary"} className="h-5 px-1.5">
-                                {task.priority}
-                            </Badge>
-                        )}
-                        {task.category_id && (
-                            <span className="flex items-center gap-1" style={{ color: getCategoryColor(task.category_id) }}>
-                                <Tag size={12} /> {getCategoryName(task.category_id)}
+                  <div className="space-y-1 grow">
+                    <div className="flex items-center gap-2">
+                      <p className={`font-medium ${task.completed ? "line-through text-muted-foreground" : ""}`}>
+                        {task.title}
+                      </p>
+                      <Badge className={`text-[10px] px-1.5 py-0 h-4 border-none text-white ${priorityColors[task.priority]}`}>
+                        {task.priority}
+                      </Badge>
+                    </div>
+                    
+                    {task.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {task.description}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        {task.categoryId && (
+                            <span className="flex items-center gap-1.5">
+                                <span 
+                                  className="w-2 h-2 rounded-full" 
+                                  style={{ backgroundColor: getCategoryColor(task.categoryId) }} 
+                                />
+                                {getCategoryName(task.categoryId)}
                             </span>
                         )}
-                        {task.due_date && (
+                        {task.dueDate && (
                             <span className="flex items-center gap-1">
-                                <Calendar size={12} /> {format(new Date(task.due_date), "MMM d")}
+                                <Calendar size={12} /> {format(new Date(task.dueDate), "MMM dd")}
                             </span>
                         )}
                     </div>
@@ -103,7 +120,6 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
                 </div>
                 
                 <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* Placeholder for future edit functionality */}
                     <Button variant="ghost" size="icon" onClick={() => console.log("Edit clicked", task.id)}>
                         <Pencil className="h-4 w-4 text-muted-foreground" />
                     </Button>

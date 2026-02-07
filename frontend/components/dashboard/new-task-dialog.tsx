@@ -13,17 +13,16 @@ interface NewTaskDialogProps {
   onClose: () => void;
   categories: Category[];
   onConfirm: (data: any) => Promise<void>;
-  // We can trigger the parent's category modal via a custom event or callback if needed,
-  // For now, we will assume the user closes this to open the other, OR we can add a callback prop later.
-  // To keep it simple and working:
+  onAddCategory?: () => void;
 }
 
-export function NewTaskDialog({ isOpen, onClose, categories, onConfirm }: NewTaskDialogProps) {
+export function NewTaskDialog({ isOpen, onClose, categories, onConfirm, onAddCategory }: NewTaskDialogProps) {
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState<string>("none");
   const [priority, setPriority] = useState("MEDIUM");
+  const [dueDate, setDueDate] = useState("");
 
   const handleSubmit = async () => {
     if (!title) return;
@@ -31,13 +30,17 @@ export function NewTaskDialog({ isOpen, onClose, categories, onConfirm }: NewTas
     try {
       const payload: any = { title, description, priority };
       if (categoryId && categoryId !== "none") {
-          payload.category_id = parseInt(categoryId);
+          payload.categoryId = parseInt(categoryId);
+      }
+      if (dueDate) {
+          payload.dueDate = new Date(dueDate).toISOString();
       }
       await onConfirm(payload);
       setTitle("");
       setDescription("");
       setPriority("MEDIUM");
       setCategoryId("none");
+      setDueDate("");
     } catch (error) {
       console.error(error);
     } finally {
@@ -74,9 +77,7 @@ export function NewTaskDialog({ isOpen, onClose, categories, onConfirm }: NewTas
                         ))}
                     </SelectContent>
                 </Select>
-                {/* Note: In a full implementation, this button would trigger the NewCategoryDialog. 
-                    For now, it acts as a visual cue or we can wire it up if you pass an onAddCategory prop. */}
-                <Button variant="outline" size="icon" title="Create Category (Use main button for now)">
+                <Button variant="outline" size="icon" title="Create Category" onClick={onAddCategory}>
                     <Plus className="h-4 w-4" />
                 </Button>
             </div>
@@ -95,6 +96,16 @@ export function NewTaskDialog({ isOpen, onClose, categories, onConfirm }: NewTas
                     </SelectContent>
                 </Select>
             </div>
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="dueDate" className="text-right">Due Date</Label>
+            <Input 
+                id="dueDate" 
+                type="date" 
+                value={dueDate} 
+                onChange={(e) => setDueDate(e.target.value)} 
+                className="col-span-3" 
+            />
           </div>
         </div>
         <DialogFooter>

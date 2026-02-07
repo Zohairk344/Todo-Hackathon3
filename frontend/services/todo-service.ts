@@ -1,16 +1,15 @@
 import { apiRequest } from "@/lib/api";
 
 export interface Task {
-  id: string;
+  id: number;
   title: string;
   description?: string | null;
-  status: "pending" | "in-progress" | "completed";
+  completed: boolean;
   priority: "LOW" | "MEDIUM" | "HIGH";
-  due_date?: string | null;
-  created_at: string;
-  updated_at: string;
-  category_id?: number | null;
-  category_name?: string | null; 
+  dueDate?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  categoryId?: number | null;
   category?: Category;
 }
 

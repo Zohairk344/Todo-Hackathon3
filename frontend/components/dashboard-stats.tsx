@@ -10,15 +10,15 @@ interface DashboardStatsProps {
 
 export function DashboardStats({ tasks }: DashboardStatsProps) {
   const total = tasks.length;
-  const completed = tasks.filter((t) => t.status === "completed").length;
+  const completed = tasks.filter((t) => t.completed).length;
   const pending = total - completed;
-  const highPriority = tasks.filter((t) => t.priority === "HIGH" && t.status !== "completed").length;
+  const highPriority = tasks.filter((t) => t.priority === "HIGH" && !t.completed).length;
   const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   const now = new Date();
   const urgent = tasks.filter((t) => {
-    if (t.status === "completed" || !t.due_date) return false;
-    const due = new Date(t.due_date);
+    if (t.completed || !t.dueDate) return false;
+    const due = new Date(t.dueDate);
     const diff = due.getTime() - now.getTime();
     const hours = diff / (1000 * 60 * 60);
     // < 48 hours includes overdue (negative hours)
