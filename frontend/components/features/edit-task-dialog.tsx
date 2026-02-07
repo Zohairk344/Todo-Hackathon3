@@ -35,11 +35,11 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
     if (task) {
       setTitle(task.title);
       setDescription(task.description || "");
-      setPriority(task.priority || "MEDIUM");
-      setCategoryId(task.categoryId || null);
+      setPriority((task.priority as any) || "MEDIUM");
+      setCategoryId(task.category_id || null);
       // Format date for input type="date" (YYYY-MM-DD)
-      if (task.dueDate) {
-        setDueDate(task.dueDate.split('T')[0]);
+      if (task.due_date) {
+        setDueDate(task.due_date.split('T')[0]);
       } else {
         setDueDate("");
       }
@@ -53,9 +53,9 @@ export function EditTaskDialog({ task, open, onOpenChange, onSave }: EditTaskDia
       await onSave({
         title,
         description,
-        priority,
-        categoryId: categoryId || undefined,
-        dueDate: dueDate || undefined
+        priority: priority as any,
+        category_id: categoryId || undefined,
+        due_date: dueDate || undefined
       });
       onOpenChange(false);
     } finally {

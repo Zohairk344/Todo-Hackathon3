@@ -7,10 +7,11 @@ export interface Task {
   completed: boolean;
   status: string; // Dynamic field for UI
   priority: "LOW" | "MEDIUM" | "HIGH";
-  dueDate?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  categoryId?: number | null;
+  due_date?: string | null;    // Fixed: snake_case
+  created_at: string;          // Fixed: snake_case
+  updated_at: string;          // Fixed: snake_case
+  category_id?: number | null; // Fixed: snake_case
+  user_id?: string;            // Fixed: snake_case (matches owner_id logic)
   category?: Category;
 }
 
@@ -18,6 +19,7 @@ export interface Category {
   id: number;
   name: string;
   color: string;
+  user_id?: string;            // Fixed: snake_case
 }
 
 export const todoService = {

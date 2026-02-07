@@ -36,7 +36,7 @@ const priorityColor: Record<string, string> = {
 
 export function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
 
-  const isOverdue = task.dueDate && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate)) && !task.completed;
+  const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !isToday(new Date(task.due_date)) && !task.completed;
 
 
 
@@ -146,13 +146,13 @@ export function TaskCard({ task, onToggle, onDelete, onEdit }: TaskCardProps) {
 
         <div className="flex items-center gap-2 text-xs">
 
-          {task.dueDate && (
+          {task.due_date && (
 
             <div className={cn("flex items-center gap-1", isOverdue ? "text-red-600 font-medium" : "text-muted-foreground")}>
 
               <Calendar className="h-3 w-3" />
 
-              <span>{format(new Date(task.dueDate), "MMM d")}</span>
+              <span>{format(new Date(task.due_date), "MMM d")}</span>
 
             </div>
 

@@ -30,10 +30,10 @@ export function NewTaskDialog({ isOpen, onClose, categories, onConfirm, onAddCat
     try {
       const payload: any = { title, description, priority };
       if (categoryId && categoryId !== "none") {
-          payload.categoryId = parseInt(categoryId);
+          payload.category_id = parseInt(categoryId);
       }
       if (dueDate) {
-          payload.dueDate = new Date(dueDate).toISOString();
+          payload.due_date = new Date(dueDate).toISOString();
       }
       await onConfirm(payload);
       setTitle("");
