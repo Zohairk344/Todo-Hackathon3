@@ -1,3 +1,6 @@
+import { TasksProvider } from "@/context/tasks-context";
+import { ClientChatWrapper } from "@/components/dashboard/client-chat-wrapper";
+
 export default function DashboardLayout({
   children,
 }: {
@@ -13,7 +16,12 @@ export default function DashboardLayout({
 
       {/* Content */}
       <div className="relative z-10">
+        {/* Restore the Provider so useTasks works */}
+        <TasksProvider>
           {children}
+          {/* Restore the Chat so it appears on the dashboard */}
+          <ClientChatWrapper />
+        </TasksProvider>
       </div>
     </div>
   );

@@ -89,6 +89,7 @@
 - [x] T020 Align ID types (String -> Number) in `frontend/components/dashboard/task-view.tsx`.
 - [x] T021 Expose `refreshTasks` in `frontend/context/tasks-context.tsx` for `ClientChatWrapper`.
 - [x] T022 Update `Task` and `Category` interfaces to use `snake_case` in `frontend/services/todo-service.ts`.
+- [x] T023 Restore `TasksProvider` and `ClientChatWrapper` in `frontend/app/dashboard/layout.tsx`.
 
 ---
 
