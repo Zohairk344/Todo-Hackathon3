@@ -50,6 +50,7 @@
 
 - [x] T018 Run `npm run build` to verify type safety across frontend components
 - [x] T019 Manual verification of full flow: Create Task -> Add Category -> Set Date -> View on Card -> Mark Complete
+- [x] T020 [US3] Implement timezone stripping for `due_date` in `todo-hackathon3/app/api/routes/tasks.py` to prevent 500 errors with naive DB columns
 
 ## Dependencies
 
