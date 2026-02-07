@@ -1,32 +1,20 @@
-import { ClientChatWrapper } from "@/components/dashboard/client-chat-wrapper";
-import { UserNav } from "@/components/dashboard/user-nav";
-import { TasksProvider } from "@/context/tasks-context";
-
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <TasksProvider>
-      <div className="flex min-h-screen flex-col bg-background">
-        {/* Header with Centering Container */}
-        <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between py-4">
-            <div className="flex gap-6 md:gap-10">
-              <h1 className="text-xl font-bold tracking-tight">Todo App</h1>
-            </div>
-            <UserNav />
-          </div>
-        </header>
-        
-        {/* Main Content with Matching Container */}
-        <main className="flex-1 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </main>
-        
-        <ClientChatWrapper />
+    <div className="min-h-screen w-full bg-[#0a0a0a] text-gray-100 selection:bg-pink-500/30">
+      {/* Background Gradient Mesh */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-violet-500/10 blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-500/10 blur-[120px]" />
       </div>
-    </TasksProvider>
+
+      {/* Content */}
+      <div className="relative z-10">
+          {children}
+      </div>
+    </div>
   );
 }

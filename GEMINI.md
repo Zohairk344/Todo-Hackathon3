@@ -226,6 +226,8 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 - TypeScript 5+, Next.js 16.1.1 (Frontend) / Python 3.10+ (Backend) + React Context, Radix UI, Lucide React, FastAPI (044-fix-dashboard-sync)
 - TypeScript 5+, Next.js 14+ (App Router) + React Context API, Lucide React (for Loader2) (045-auth-gate-tasks)
 - N/A (Client-side state management) (045-auth-gate-tasks)
+- TypeScript 5+, React 19 (Next.js 16 App Router) + Next.js, Tailwind CSS 4, Lucide React, `framer-motion` (New) (049-dashboard-ui-overhaul)
+- N/A (UI-only change) (049-dashboard-ui-overhaul)
 
 ## Recent Changes
 - 023-implement-mcp-server: Added Python 3.10+

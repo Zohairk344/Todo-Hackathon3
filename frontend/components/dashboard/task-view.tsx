@@ -3,21 +3,20 @@
 import { useState } from "react";
 import { Task, Category } from "@/services/todo-service";
 import { format } from "date-fns";
-import { CheckCircle2, Circle, Trash2, Calendar, Tag, Pencil, AlertCircle } from "lucide-react";
+import { Check, Circle, Trash2, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface TaskViewProps {
   tasks: Task[];
   categories: Category[];
-  onToggleStatus: (id: number) => Promise<void>;
-  onUpdate: (id: number, data: Partial<Task>) => Promise<void>;
-  onDelete: (id: number) => Promise<void>;
+  onStatusChange: (id: string, status: string) => Promise<void>;
+  onUpdate: (id: string, data: Partial<Task>) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 }
 
-export function TaskView({ tasks, categories, onToggleStatus, onUpdate, onDelete }: TaskViewProps) {
+export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete }: TaskViewProps) {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -26,8 +25,8 @@ export function TaskView({ tasks, categories, onToggleStatus, onUpdate, onDelete
     const matchesFilter = filter === "all" 
       ? true 
       : filter === "pending" 
-        ? !task.completed
-        : task.completed;
+        ? task.status !== "completed" 
+        : task.status === filter;
     return matchesSearch && matchesFilter;
   });
 
@@ -40,103 +39,139 @@ export function TaskView({ tasks, categories, onToggleStatus, onUpdate, onDelete
     if (!id) return "gray";
     return categories.find(c => c.id === id)?.color || "gray";
   };
-
-  const getPriorityVariant = (priority: string) => {
-    switch (priority) {
-      case "HIGH": return "destructive";
-      case "MEDIUM": return "default";
-      case "LOW": return "outline";
-      default: return "secondary";
-    }
+  
+  // Neon Badge Styles Helper
+  const getPriorityStyle = (priority: string) => {
+      switch (priority) {
+          case 'HIGH': 
+            return 'bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_10px_-3px_rgba(239,68,68,0.3)]';
+          case 'MEDIUM': 
+            return 'bg-orange-500/10 text-orange-400 border-orange-500/20 shadow-[0_0_10px_-3px_rgba(249,115,22,0.3)]';
+          case 'LOW': 
+            return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_-3px_rgba(16,185,129,0.3)]';
+          default: 
+            return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
+      }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Controls Bar */}
       <div className="flex items-center gap-4">
-        <Input 
-          placeholder="Search tasks..." 
-          value={search} 
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
-        />
+        <div className="relative flex-1 max-w-sm group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-violet-600 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-200"></div>
+            <Input 
+              placeholder="Search tasks..." 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)}
+              className="relative bg-[#0a0a0a] border-white/10 text-gray-200 placeholder:text-gray-600 focus-visible:ring-0 focus-visible:border-white/20"
+            />
+        </div>
+        
         <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] bg-[#0a0a0a] border-white/10 text-gray-300">
             <SelectValue placeholder="Filter" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
+          <SelectContent className="bg-[#0a0a0a] border-white/10 text-gray-300">
+            <SelectItem value="all">All Tasks</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      <div className="space-y-2">
-        {filteredTasks.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground border-2 border-dashed rounded-lg">
-                No tasks found.
-            </div>
-        ) : (
-            filteredTasks.map((task) => {
-              const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
-              
-              return (
-                <div key={task.id} className="flex items-start justify-between p-4 border rounded-lg bg-card hover:bg-muted/50 transition-colors group">
-                  <div className="flex items-start gap-4 grow">
-                    <button 
-                      onClick={() => onToggleStatus(task.id)}
-                      className={`mt-1 ${task.completed ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
-                    >
-                      {task.completed ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
-                    </button>
-                    
-                    <div className="space-y-1 grow">
-                      <div className="flex items-center gap-2">
-                        <p className={`font-medium leading-none ${task.completed ? "line-through text-muted-foreground" : ""}`}>
-                          {task.title}
-                        </p>
+      {/* Animated Task List */}
+      <div className="space-y-3">
+        <AnimatePresence mode="popLayout">
+            {filteredTasks.length === 0 ? (
+                <motion.div 
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="text-center py-16 text-muted-foreground border border-dashed border-white/10 rounded-xl bg-white/5"
+                >
+                    No tasks found.
+                </motion.div>
+            ) : (
+                filteredTasks.map((task) => (
+                  <motion.div
+                    key={task.id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    whileHover={{ scale: 1.01 }}
+                    className="group relative overflow-hidden rounded-xl border border-white/5 bg-white/[0.03] p-5 backdrop-blur-md transition-all hover:bg-white/[0.06] hover:border-white/10 hover:shadow-2xl hover:shadow-black/50"
+                  >
+                    {/* Glowing side accent based on priority */}
+                    <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                        task.priority === 'HIGH' ? 'bg-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 
+                        task.priority === 'MEDIUM' ? 'bg-orange-500/50' : 'bg-emerald-500/50'
+                    }`} />
+
+                    <div className="flex items-start justify-between pl-3">
+                      <div className="flex items-start gap-4">
+                        <button 
+                          onClick={() => onStatusChange(task.id, task.status === "completed" ? "pending" : "completed")}
+                          className={`mt-1 rounded-full p-0.5 transition-colors ${
+                              task.status === "completed" 
+                              ? "text-emerald-400 bg-emerald-400/10 ring-1 ring-emerald-400/20" 
+                              : "text-gray-500 hover:text-gray-300 ring-1 ring-white/10 hover:ring-white/30"
+                          }`}
+                        >
+                          {task.status === "completed" ? <Check className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
+                        </button>
+                        
+                        <div className="space-y-1.5">
+                          <p className={`font-medium text-lg leading-none transition-all ${task.status === "completed" ? "line-through text-gray-600" : "text-gray-100"}`}>
+                            {task.title}
+                          </p>
+                          
+                          {task.description && (
+                              <p className="text-sm text-gray-500 line-clamp-1">
+                                  {task.description}
+                              </p>
+                          )}
+
+                          {/* Metadata Chips */}
+                          <div className="flex items-center gap-2 pt-2 flex-wrap">
+                              {/* Neon Priority Badge */}
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPriorityStyle(task.priority)}`}>
+                                  {task.priority}
+                              </span>
+
+                              {/* Neon Category Pill */}
+                              {task.category_id && (
+                                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium border border-blue-500/20 bg-blue-500/5 text-blue-300">
+                                      <div className="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: getCategoryColor(task.category_id) }} />
+                                      <span>{getCategoryName(task.category_id)}</span>
+                                  </div>
+                              )}
+
+                              {/* Date Pill */}
+                              {task.due_date && (
+                                  <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] border border-white/5 bg-white/5 text-gray-400`}>
+                                      <Calendar size={12} /> 
+                                      {format(new Date(task.due_date), "MMM d, yyyy")}
+                                  </span>
+                              )}
+                          </div>
+                        </div>
                       </div>
                       
-                      {task.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-1">
-                          {task.description}
-                        </p>
-                      )}
-
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1 flex-wrap">
-                          <Badge variant={getPriorityVariant(task.priority) as any} className="h-5 px-1.5 text-[10px] uppercase">
-                            {task.priority}
-                          </Badge>
-
-                          {task.categoryId && (
-                              <div className="flex items-center gap-1 border px-1.5 py-0.5 rounded bg-background">
-                                  <div 
-                                    className="w-2 h-2 rounded-full" 
-                                    style={{ backgroundColor: getCategoryColor(task.categoryId) }} 
-                                  />
-                                  <span>{getCategoryName(task.categoryId)}</span>
-                              </div>
-                          )}
-
-                          {task.dueDate && (
-                              <span className={`flex items-center gap-1 border px-1.5 py-0.5 rounded ${isOverdue ? "text-destructive border-destructive/50" : "bg-background"}`}>
-                                  {isOverdue ? <AlertCircle size={12} /> : <Calendar size={12} />} 
-                                  {format(new Date(task.dueDate), "MMM d, yyyy")}
-                              </span>
-                          )}
+                      <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <motion.button 
+                            whileHover={{ scale: 1.1, rotate: 10 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => onDelete(task.id)}
+                            className="p-2 text-gray-500 hover:text-red-400 transition-colors"
+                          >
+                              <Trash2 className="h-4 w-4" />
+                          </motion.button>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" onClick={() => onDelete(task.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                  </div>
-                </div>
-              );
-            })
-        )}
+                  </motion.div>
+                ))
+            )}
+        </AnimatePresence>
       </div>
     </div>
   );
