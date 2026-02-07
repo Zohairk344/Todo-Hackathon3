@@ -49,7 +49,7 @@
 **Goal**: Ensure quality and consistency.
 
 - [x] T018 Run `npm run build` to verify type safety across frontend components
-- [ ] T019 Manual verification of full flow: Create Task -> Add Category -> Set Date -> View on Card -> Mark Complete
+- [x] T019 Manual verification of full flow: Create Task -> Add Category -> Set Date -> View on Card -> Mark Complete
 
 ## Dependencies
 

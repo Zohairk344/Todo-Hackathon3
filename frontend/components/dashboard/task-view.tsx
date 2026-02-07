@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Task, Category } from "@/services/todo-service";
 import { format } from "date-fns";
-import { CheckCircle2, Circle, Trash2, Calendar, Tag, Pencil } from "lucide-react";
+import { CheckCircle2, Circle, Trash2, Calendar, Tag, Pencil, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -41,10 +41,13 @@ export function TaskView({ tasks, categories, onToggleStatus, onUpdate, onDelete
     return categories.find(c => c.id === id)?.color || "gray";
   };
 
-  const priorityColors = {
-    HIGH: "bg-red-500 hover:bg-red-600",
-    MEDIUM: "bg-yellow-500 hover:bg-yellow-600",
-    LOW: "bg-green-500 hover:bg-green-600",
+  const getPriorityVariant = (priority: string) => {
+    switch (priority) {
+      case "HIGH": return "destructive";
+      case "MEDIUM": return "default";
+      case "LOW": return "outline";
+      default: return "secondary";
+    }
   };
 
   return (
@@ -74,61 +77,65 @@ export function TaskView({ tasks, categories, onToggleStatus, onUpdate, onDelete
                 No tasks found.
             </div>
         ) : (
-            filteredTasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg bg-card hover:bg-muted/50 transition-colors group">
-                <div className="flex items-center gap-4 grow">
-                  <button 
-                    onClick={() => onToggleStatus(task.id)}
-                    className={task.completed ? "text-primary" : "text-muted-foreground hover:text-primary"}
-                  >
-                    {task.completed ? <CheckCircle2 /> : <Circle />}
-                  </button>
-                  
-                  <div className="space-y-1 grow">
-                    <div className="flex items-center gap-2">
-                      <p className={`font-medium ${task.completed ? "line-through text-muted-foreground" : ""}`}>
-                        {task.title}
-                      </p>
-                      <Badge className={`text-[10px] px-1.5 py-0 h-4 border-none text-white ${priorityColors[task.priority]}`}>
-                        {task.priority}
-                      </Badge>
-                    </div>
+            filteredTasks.map((task) => {
+              const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.completed;
+              
+              return (
+                <div key={task.id} className="flex items-start justify-between p-4 border rounded-lg bg-card hover:bg-muted/50 transition-colors group">
+                  <div className="flex items-start gap-4 grow">
+                    <button 
+                      onClick={() => onToggleStatus(task.id)}
+                      className={`mt-1 ${task.completed ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+                    >
+                      {task.completed ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
+                    </button>
                     
-                    {task.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {task.description}
-                      </p>
-                    )}
+                    <div className="space-y-1 grow">
+                      <div className="flex items-center gap-2">
+                        <p className={`font-medium leading-none ${task.completed ? "line-through text-muted-foreground" : ""}`}>
+                          {task.title}
+                        </p>
+                      </div>
+                      
+                      {task.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-1">
+                          {task.description}
+                        </p>
+                      )}
 
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        {task.categoryId && (
-                            <span className="flex items-center gap-1.5">
-                                <span 
-                                  className="w-2 h-2 rounded-full" 
-                                  style={{ backgroundColor: getCategoryColor(task.categoryId) }} 
-                                />
-                                {getCategoryName(task.categoryId)}
-                            </span>
-                        )}
-                        {task.dueDate && (
-                            <span className="flex items-center gap-1">
-                                <Calendar size={12} /> {format(new Date(task.dueDate), "MMM dd")}
-                            </span>
-                        )}
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1 flex-wrap">
+                          <Badge variant={getPriorityVariant(task.priority) as any} className="h-5 px-1.5 text-[10px] uppercase">
+                            {task.priority}
+                          </Badge>
+
+                          {task.categoryId && (
+                              <div className="flex items-center gap-1 border px-1.5 py-0.5 rounded bg-background">
+                                  <div 
+                                    className="w-2 h-2 rounded-full" 
+                                    style={{ backgroundColor: getCategoryColor(task.categoryId) }} 
+                                  />
+                                  <span>{getCategoryName(task.categoryId)}</span>
+                              </div>
+                          )}
+
+                          {task.dueDate && (
+                              <span className={`flex items-center gap-1 border px-1.5 py-0.5 rounded ${isOverdue ? "text-destructive border-destructive/50" : "bg-background"}`}>
+                                  {isOverdue ? <AlertCircle size={12} /> : <Calendar size={12} />} 
+                                  {format(new Date(task.dueDate), "MMM d, yyyy")}
+                              </span>
+                          )}
+                      </div>
                     </div>
                   </div>
+                  
+                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" onClick={() => onDelete(task.id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                  </div>
                 </div>
-                
-                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" onClick={() => console.log("Edit clicked", task.id)}>
-                        <Pencil className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => onDelete(task.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                </div>
-              </div>
-            ))
+              );
+            })
         )}
       </div>
     </div>
