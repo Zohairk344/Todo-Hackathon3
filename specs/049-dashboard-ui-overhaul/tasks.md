@@ -81,6 +81,15 @@
 
 ---
 
+## Phase 7: Build Fixes (Priority: P0)
+
+**Purpose**: Resolve TypeScript compilation errors between Context and Components.
+
+- [x] T019 Update `updateTaskStatus` signature in `frontend/context/tasks-context.tsx` to match View requirements.
+- [x] T020 Align ID types (String -> Number) in `frontend/components/dashboard/task-view.tsx`.
+
+---
+
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 **Purpose**: Improvements that affect multiple user stories

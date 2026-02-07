@@ -11,9 +11,10 @@ import { motion, AnimatePresence } from "framer-motion";
 interface TaskViewProps {
   tasks: Task[];
   categories: Category[];
-  onStatusChange: (id: string, status: string) => Promise<void>;
-  onUpdate: (id: string, data: Partial<Task>) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  // FIXED: ID is number
+  onStatusChange: (id: number, status: string) => Promise<void>;
+  onUpdate: (id: number, data: Partial<Task>) => Promise<void>;
+  onDelete: (id: number) => Promise<void>;
 }
 
 export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete }: TaskViewProps) {
@@ -40,7 +41,6 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
     return categories.find(c => c.id === id)?.color || "gray";
   };
   
-  // Neon Badge Styles Helper
   const getPriorityStyle = (priority: string) => {
       switch (priority) {
           case 'HIGH': 
@@ -56,7 +56,6 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
 
   return (
     <div className="space-y-6">
-      {/* Controls Bar */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm group">
             <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-500 to-violet-600 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-200"></div>
@@ -80,7 +79,6 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
         </Select>
       </div>
 
-      {/* Animated Task List */}
       <div className="space-y-3">
         <AnimatePresence mode="popLayout">
             {filteredTasks.length === 0 ? (
@@ -101,7 +99,6 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
                     whileHover={{ scale: 1.01 }}
                     className="group relative overflow-hidden rounded-xl border border-white/5 bg-white/[0.03] p-5 backdrop-blur-md transition-all hover:bg-white/[0.06] hover:border-white/10 hover:shadow-2xl hover:shadow-black/50"
                   >
-                    {/* Glowing side accent based on priority */}
                     <div className={`absolute left-0 top-0 bottom-0 w-1 ${
                         task.priority === 'HIGH' ? 'bg-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 
                         task.priority === 'MEDIUM' ? 'bg-orange-500/50' : 'bg-emerald-500/50'
@@ -131,14 +128,11 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
                               </p>
                           )}
 
-                          {/* Metadata Chips */}
                           <div className="flex items-center gap-2 pt-2 flex-wrap">
-                              {/* Neon Priority Badge */}
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPriorityStyle(task.priority)}`}>
                                   {task.priority}
                               </span>
 
-                              {/* Neon Category Pill */}
                               {task.category_id && (
                                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium border border-blue-500/20 bg-blue-500/5 text-blue-300">
                                       <div className="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: getCategoryColor(task.category_id) }} />
@@ -146,7 +140,6 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
                                   </div>
                               )}
 
-                              {/* Date Pill */}
                               {task.due_date && (
                                   <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] border border-white/5 bg-white/5 text-gray-400`}>
                                       <Calendar size={12} /> 

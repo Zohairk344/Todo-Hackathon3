@@ -5,6 +5,7 @@ export interface Task {
   title: string;
   description?: string | null;
   completed: boolean;
+  status: string; // Dynamic field for UI
   priority: "LOW" | "MEDIUM" | "HIGH";
   dueDate?: string | null;
   createdAt: string;
@@ -21,15 +22,28 @@ export interface Category {
 
 export const todoService = {
   getTasks: (userId: string) => 
-    apiRequest<Task[]>(`/api/${userId}/tasks`),
+    apiRequest<Task[]>(`/api/${userId}/tasks`).then(tasks => 
+      tasks.map(t => ({ ...t, status: t.completed ? "completed" : "pending" }))
+    ),
 
   createTask: (userId: string, data: Partial<Task>) => 
-    apiRequest<Task>(`/api/${userId}/tasks`, { method: "POST", body: JSON.stringify(data) }),
+    apiRequest<Task>(`/api/${userId}/tasks`, { method: "POST", body: JSON.stringify(data) }).then(t => 
+      ({ ...t, status: t.completed ? "completed" : "pending" })
+    ),
 
-  updateTask: (userId: string, taskId: string, data: Partial<Task>) => 
-    apiRequest<Task>(`/api/${userId}/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify(data) }),
+  updateTask: (userId: string, taskId: number, data: Partial<Task>) => {
+    // If status is provided, map it to completed for the backend
+    const payload = { ...data };
+    if ('status' in data) {
+      payload.completed = data.status === 'completed';
+      delete payload.status;
+    }
+    return apiRequest<Task>(`/api/${userId}/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify(payload) }).then(t => 
+      ({ ...t, status: t.completed ? "completed" : "pending" })
+    );
+  },
 
-  deleteTask: (userId: string, taskId: string) => 
+  deleteTask: (userId: string, taskId: number) => 
     apiRequest<void>(`/api/${userId}/tasks/${taskId}`, { method: "DELETE" }),
 
   getCategories: (userId: string) => 

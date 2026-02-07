@@ -1,140 +1,126 @@
 "use client";
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { useAuth } from "./auth-context";
-import { todoService, Task, Category } from "@/services/todo-service";
-import { toast } from "sonner"; 
-import { Loader2 } from "lucide-react";
+
+import { createContext, useContext, useEffect, useState } from "react";
+import { Task, Category, todoService } from "@/services/todo-service";
+import { toast } from "sonner";
+import { useAuth } from "@/context/auth-context";
 
 interface TasksContextType {
   tasks: Task[];
   categories: Category[];
   isLoading: boolean;
-  refreshTasks: () => Promise<void>;
-  addTask: (data: Partial<Task>) => Promise<void>;
-  addCategory: (data: { name: string; color: string }) => Promise<void>;
-  updateTaskStatus: (taskId: number) => Promise<void>;
-  updateTask: (taskId: number, data: Partial<Task>) => Promise<void>;
-  deleteTask: (taskId: number) => Promise<void>;
+  addTask: (task: Partial<Task>) => Promise<void>;
+  addCategory: (category: Partial<Category>) => Promise<void>;
+  updateTaskStatus: (id: number, status: string) => Promise<void>; // FIXED SIGNATURE
+  updateTask: (id: number, updates: Partial<Task>) => Promise<void>; // FIXED SIGNATURE
+  deleteTask: (id: number) => Promise<void>; // FIXED SIGNATURE
 }
 
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
 
 export function TasksProvider({ children }: { children: React.ReactNode }) {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const refreshTasks = useCallback(async () => {
-    // STRICT GUARD: Do not attempt fetch if user/id is missing or auth is loading. Prevents 401s.
-    if (authLoading || !user?.id) return;
-    
+  const refreshData = async () => {
+    if (!user?.id) return;
     setIsLoading(true);
     try {
       const [fetchedTasks, fetchedCategories] = await Promise.all([
         todoService.getTasks(user.id),
-        todoService.getCategories(user.id)
+        todoService.getCategories(user.id),
       ]);
       setTasks(fetchedTasks);
       setCategories(fetchedCategories);
-    } catch (error: unknown) {
-      console.error("Failed to load data", error);
-      if (error instanceof Error && error.message === "Unauthorized") {
-        toast.error("Session Expired. Please login again.");
-      }
+    } catch (error) {
+      console.error("Failed to fetch data", error);
     } finally {
       setIsLoading(false);
     }
-  }, [user, authLoading]);
+  };
 
-  // Initial Fetch only when USER exists and Auth is done
   useEffect(() => {
-    if (!authLoading && user?.id) {
-        refreshTasks();
+    if (user?.id) {
+      refreshData();
     }
-  }, [authLoading, user, refreshTasks]);
+  }, [user?.id]);
 
-  const addTask = async (data: Partial<Task>) => {
-    if (authLoading || !user?.id) return;
+  const addTask = async (task: Partial<Task>) => {
+    if (!user?.id) return;
     try {
-        await todoService.createTask(user.id, data);
-        await refreshTasks();
-        toast.success("Task created and synced"); 
-    } catch (e) {
-        toast.error("Failed to create task");
-        throw e;
+      const newTask = await todoService.createTask(user.id, task);
+      setTasks((prev) => [...prev, newTask]);
+      toast.success("Task created");
+    } catch (error) {
+      toast.error("Failed to create task");
     }
   };
 
-  const addCategory = async (data: { name: string; color: string }) => {
-    if (authLoading || !user?.id) return;
+  const addCategory = async (category: Partial<Category>) => {
+    if (!user?.id) return;
     try {
-        await todoService.createCategory(user.id, data);
-        await refreshTasks();
-        toast.success("Category created");
-    } catch (e) {
-        toast.error("Failed to create category");
-        throw e;
+      const newCategory = await todoService.createCategory(user.id, {
+        name: category.name || "",
+        color: category.color || "#000000"
+      });
+      setCategories((prev) => [...prev, newCategory]);
+      toast.success("Category created");
+    } catch (error) {
+      toast.error("Failed to create category");
     }
   };
-  
-  const updateTaskStatus = async (taskId: number) => {
-     if (authLoading || !user?.id) return;
-     const task = tasks.find(t => t.id === taskId);
-     if (!task) return;
 
-     const newStatus = !task.completed;
-
-     // Optimistic update
-     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: newStatus } : t));
-     try {
-        await todoService.updateTask(user.id, taskId.toString(), { completed: newStatus });
-     } catch (e) {
-        toast.error("Failed to update status");
-        refreshTasks(); 
-     }
+  // FIXED: Accepts ID and Status
+  const updateTaskStatus = async (id: number, status: string) => {
+    if (!user?.id) return;
+    try {
+      // Optimistic update
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, status } : t));
+      
+      await todoService.updateTask(user.id, id, { status });
+    } catch (error) {
+      toast.error("Failed to update status");
+      refreshData(); // Revert on error
+    }
   };
 
-  const updateTask = async (taskId: number, data: Partial<Task>) => {
-     if (authLoading || !user?.id) return;
-     // Optimistic update
-     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...data } : t));
-     try {
-        await todoService.updateTask(user.id, taskId.toString(), data);
-        toast.success("Task updated");
-     } catch (e) {
-        toast.error("Failed to update task");
-        refreshTasks(); 
-     }
+  const updateTask = async (id: number, updates: Partial<Task>) => {
+    if (!user?.id) return;
+    try {
+      const updated = await todoService.updateTask(user.id, id, updates);
+      setTasks(prev => prev.map(t => t.id === id ? updated : t));
+      toast.success("Task updated");
+    } catch (error) {
+      toast.error("Failed to update task");
+    }
   };
 
-  const deleteTask = async (taskId: number) => {
-      if (authLoading || !user?.id) return;
-      try {
-        await todoService.deleteTask(user.id, taskId.toString());
-        setTasks(prev => prev.filter(t => t.id !== taskId));
-        toast.success("Task deleted");
-      } catch (e) {
-        toast.error("Failed to delete task");
-      }
+  const deleteTask = async (id: number) => {
+    if (!user?.id) return;
+    try {
+      await todoService.deleteTask(user.id, id);
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+      toast.success("Task deleted");
+    } catch (error) {
+      toast.error("Failed to delete task");
+    }
   };
-
-  // THE GATE: Block rendering until Auth is ready.
-  if (authLoading) {
-    return (
-      <div className="flex h-full w-full items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Strict null check: if authLoading is false but user is null, return null (rendering nothing).
-  if (!user) {
-    return null;
-  }
 
   return (
-    <TasksContext.Provider value={{ tasks, categories, isLoading, refreshTasks, addTask, addCategory, updateTaskStatus, updateTask, deleteTask }}>
+    <TasksContext.Provider
+      value={{
+        tasks,
+        categories,
+        isLoading,
+        addTask,
+        addCategory,
+        updateTaskStatus,
+        updateTask,
+        deleteTask,
+      }}
+    >
       {children}
     </TasksContext.Provider>
   );
