@@ -1,39 +1,35 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-background bg-grid-pattern relative overflow-hidden">
-      {/* Gradient overlay to soften the grid edges */}
-      <div className="absolute inset-0 bg-background/40 mask-[radial-gradient(ellipse_at_center,transparent_20%,black)] pointer-events-none" />
+    <main className="flex min-h-screen flex-col items-center justify-center p-24 text-center relative z-10">
+      
+      {/* Hero Section */}
+      <div className="relative max-w-3xl space-y-8 p-12 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md shadow-2xl">
+        <div className="space-y-4">
+          <h1 className="text-6xl font-black tracking-tighter bg-gradient-to-br from-white via-gray-200 to-gray-500 bg-clip-text text-transparent drop-shadow-sm">
+            Master Your Day <br /> With Clarity
+          </h1>
+          <p className="text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
+            The task management system designed for flow. Organize your life with a tool that gets out of your way and lets you focus on what matters.
+          </p>
+        </div>
 
-      <div className="z-10 w-full max-w-3xl flex flex-col items-center gap-8 text-center animate-in fade-in slide-in-from-bottom-8 duration-700 font-mono">
-
-        <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl">
-          Master Your Day <br />
-          <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-primary/60">
-            With Clarity
-          </span>
-        </h1>
-        
-        <p className="text-xl text-muted-foreground max-w-2xl leading-relaxed">
-          The task management system designed for flow. Organize your life with a tool that gets out of your way and lets you focus on what matters.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-4 mt-8 w-full sm:w-auto">
+        <div className="flex items-center justify-center gap-4">
           <Link href="/sign-up">
-            <Button size="lg" className="w-full sm:w-auto text-lg px-8 h-12 gap-2 shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">
-              Get Started <ArrowRight className="h-4 w-4" />
+            <Button size="lg" className="h-12 px-8 text-base bg-white text-black hover:bg-gray-200 font-bold rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all hover:scale-105">
+              Get Started
             </Button>
           </Link>
           <Link href="/sign-in">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 h-12 hover:bg-muted/50">
+            <Button size="lg" variant="outline" className="h-12 px-8 text-base border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/40 text-white rounded-full backdrop-blur-sm transition-all">
               Sign In
             </Button>
           </Link>
         </div>
       </div>
+
     </main>
   );
 }

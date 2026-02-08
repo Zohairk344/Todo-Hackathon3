@@ -11,13 +11,12 @@ import { motion, AnimatePresence } from "framer-motion";
 interface TaskViewProps {
   tasks: Task[];
   categories: Category[];
-  // FIXED: ID is number
   onStatusChange: (id: number, status: string) => Promise<void>;
   onUpdate: (id: number, data: Partial<Task>) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
 }
 
-export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete }: TaskViewProps) {
+export function TaskView({ tasks, categories, onStatusChange, onDelete }: TaskViewProps) {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -31,18 +30,22 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
     return matchesSearch && matchesFilter;
   });
 
-  const getCategoryName = (id?: number | null) => {
-    if (!id) return null;
-    return categories.find(c => c.id === id)?.name;
+  // ROBUST LOOKUP: Handles both string "1" and number 1
+  const getCategoryName = (catId?: number | string | null) => {
+    if (!catId) return null;
+    const cat = categories.find(c => c.id == catId); // Loose equality (==) matches string to number
+    return cat ? cat.name : null;
   };
 
-  const getCategoryColor = (id?: number | null) => {
-    if (!id) return "gray";
-    return categories.find(c => c.id === id)?.color || "gray";
+  const getCategoryColor = (catId?: number | string | null) => {
+    if (!catId) return "gray";
+    const cat = categories.find(c => c.id == catId);
+    return cat ? cat.color : "gray";
   };
   
   const getPriorityStyle = (priority: string) => {
-      switch (priority) {
+      const p = priority?.toUpperCase() || "MEDIUM";
+      switch (p) {
           case 'HIGH': 
             return 'bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_10px_-3px_rgba(239,68,68,0.3)]';
           case 'MEDIUM': 
@@ -100,8 +103,8 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
                     className="group relative overflow-hidden rounded-xl border border-white/5 bg-white/[0.03] p-5 backdrop-blur-md transition-all hover:bg-white/[0.06] hover:border-white/10 hover:shadow-2xl hover:shadow-black/50"
                   >
                     <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                        task.priority === 'HIGH' ? 'bg-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 
-                        task.priority === 'MEDIUM' ? 'bg-orange-500/50' : 'bg-emerald-500/50'
+                        (task.priority || 'MEDIUM').toUpperCase() === 'HIGH' ? 'bg-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 
+                        (task.priority || 'MEDIUM').toUpperCase() === 'MEDIUM' ? 'bg-orange-500/50' : 'bg-emerald-500/50'
                     }`} />
 
                     <div className="flex items-start justify-between pl-3">
@@ -130,10 +133,11 @@ export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete
 
                           <div className="flex items-center gap-2 pt-2 flex-wrap">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPriorityStyle(task.priority)}`}>
-                                  {task.priority}
+                                  {task.priority || "MEDIUM"}
                               </span>
 
-                              {task.category_id && (
+                              {/* Checks both snake_case (Backend) and camelCase (potential legacy) */}
+                              {getCategoryName(task.category_id) && (
                                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium border border-blue-500/20 bg-blue-500/5 text-blue-300">
                                       <div className="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: getCategoryColor(task.category_id) }} />
                                       <span>{getCategoryName(task.category_id)}</span>
