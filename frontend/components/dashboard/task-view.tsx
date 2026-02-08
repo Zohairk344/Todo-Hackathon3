@@ -16,7 +16,7 @@ interface TaskViewProps {
   onDelete: (id: number) => Promise<void>;
 }
 
-export function TaskView({ tasks, categories, onStatusChange, onDelete }: TaskViewProps) {
+export function TaskView({ tasks, categories, onStatusChange, onUpdate, onDelete }: TaskViewProps) {
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 
@@ -30,10 +30,9 @@ export function TaskView({ tasks, categories, onStatusChange, onDelete }: TaskVi
     return matchesSearch && matchesFilter;
   });
 
-  // ROBUST LOOKUP: Handles both string "1" and number 1
   const getCategoryName = (catId?: number | string | null) => {
     if (!catId) return null;
-    const cat = categories.find(c => c.id == catId); // Loose equality (==) matches string to number
+    const cat = categories.find(c => c.id == catId);
     return cat ? cat.name : null;
   };
 
@@ -66,7 +65,7 @@ export function TaskView({ tasks, categories, onStatusChange, onDelete }: TaskVi
               placeholder="Search tasks..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)}
-              className="relative bg-[#0a0a0a] border-white/10 text-gray-200 placeholder:text-gray-600 focus-visible:ring-0 focus-visible:border-white/20"
+              className="relative bg-[#0a0a0a] border-white/10 text-gray-200 placeholder:text-gray-500 focus-visible:ring-0 focus-visible:border-white/20"
             />
         </div>
         
@@ -108,7 +107,7 @@ export function TaskView({ tasks, categories, onStatusChange, onDelete }: TaskVi
                     }`} />
 
                     <div className="flex items-start justify-between pl-3">
-                      <div className="flex items-start gap-4">
+                      <div className="flex items-start gap-4 w-full">
                         <button 
                           onClick={() => onStatusChange(task.id, task.status === "completed" ? "pending" : "completed")}
                           className={`mt-1 rounded-full p-0.5 transition-colors ${
@@ -120,13 +119,14 @@ export function TaskView({ tasks, categories, onStatusChange, onDelete }: TaskVi
                           {task.status === "completed" ? <Check className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
                         </button>
                         
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5 flex-1">
                           <p className={`font-medium text-lg leading-none transition-all ${task.status === "completed" ? "line-through text-gray-600" : "text-gray-100"}`}>
                             {task.title}
                           </p>
                           
+                          {/* VISIBILITY FIX: Changed text-gray-500 to text-gray-400/300 */}
                           {task.description && (
-                              <p className="text-sm text-gray-500 line-clamp-1">
+                              <p className="text-sm text-gray-400 line-clamp-2">
                                   {task.description}
                               </p>
                           )}
@@ -136,8 +136,8 @@ export function TaskView({ tasks, categories, onStatusChange, onDelete }: TaskVi
                                   {task.priority || "MEDIUM"}
                               </span>
 
-                              {/* Checks both snake_case (Backend) and camelCase (potential legacy) */}
-                              {getCategoryName(task.category_id) && (
+                              {/* Checks ID presence more robustly */}
+                              {(task.category_id !== null && task.category_id !== undefined) && (
                                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium border border-blue-500/20 bg-blue-500/5 text-blue-300">
                                       <div className="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: getCategoryColor(task.category_id) }} />
                                       <span>{getCategoryName(task.category_id)}</span>
@@ -145,8 +145,8 @@ export function TaskView({ tasks, categories, onStatusChange, onDelete }: TaskVi
                               )}
 
                               {task.due_date && (
-                                  <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] border border-white/5 bg-white/5 text-gray-400`}>
-                                      <Calendar size={12} /> 
+                                  <span className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] border border-white/5 bg-white/5 text-gray-300`}>
+                                      <Calendar size={12} className="text-pink-400" /> 
                                       {format(new Date(task.due_date), "MMM d, yyyy")}
                                   </span>
                               )}

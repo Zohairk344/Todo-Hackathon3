@@ -113,6 +113,15 @@
 
 ---
 
+## Phase 9: Final Polish & Branding (Priority: P1)
+
+**Purpose**: Final visual refinements and brand unification.
+
+- [x] T027 [P] Lighten task detail text (description, date, category) for better visibility on dark background in `frontend/components/dashboard/task-view.tsx`
+- [x] T028 [P] Implement pink/violet gradients on Home Page headline and buttons in `frontend/app/page.tsx`
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
