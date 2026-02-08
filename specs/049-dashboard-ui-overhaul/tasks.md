@@ -93,7 +93,17 @@
 
 ---
 
-## Phase 6: Polish & Cross-Cutting Concerns
+## Phase 6: Visual Unification (Priority: P1)
+
+**Goal**: Synchronize the visual language across Dashboard and Auth pages.
+
+- [x] T024 Unify Dashboard Theme by removing local backgrounds in `frontend/app/dashboard/layout.tsx`
+- [x] T025 Implement Glassmorphism for Sign In page in `frontend/app/(auth)/sign-in/page.tsx`
+- [x] T026 Implement Glassmorphism for Sign Up page in `frontend/app/(auth)/sign-up/page.tsx`
+
+---
+
+## Phase 8: Polish & Cross-Cutting Concerns
 
 **Purpose**: Improvements that affect multiple user stories
 

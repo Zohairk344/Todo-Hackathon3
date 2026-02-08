@@ -1,83 +1,84 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
-export default function SignInPage() {
+export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, loading } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
+    setIsSubmitting(true);
     try {
       await signIn(email, password);
-    } catch (err: any) {
-      // toast.error is handled in auth-context.tsx
-      setLoading(false);
+    } catch (error) {
+      // Error handled in context
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="backdrop-blur-sm bg-card/80 border-muted/20 shadow-xl">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-        <CardDescription>Enter your credentials to access your account</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSignIn} className="space-y-4">
+    <div className="flex min-h-screen items-center justify-center p-4 relative z-10">
+      <div className="w-full max-w-md space-y-8 rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl shadow-2xl">
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            Welcome Back
+          </h2>
+          <p className="text-sm text-gray-400">
+            Enter your credentials to access your flow.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-gray-300">Email</Label>
             <Input
               id="email"
               type="email"
               placeholder="name@example.com"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
+              className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-pink-500/50"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-gray-300">Password</Label>
             <Input
               id="password"
               type="password"
-              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              className="bg-black/20 border-white/10 text-white focus-visible:ring-pink-500/50"
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing in...
-              </>
-            ) : (
-              "Sign In"
-            )}
+
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-pink-500 to-violet-600 hover:from-pink-600 hover:to-violet-700 text-white font-medium py-2 rounded-lg transition-all hover:scale-[1.02]"
+            disabled={isSubmitting || loading}
+          >
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign In"}
           </Button>
         </form>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <div className="text-sm text-muted-foreground">
+
+        <div className="text-center text-sm text-gray-500">
           Don&apos;t have an account?{" "}
-          <Link href="/sign-up" className="text-primary hover:underline font-medium">
+          <Link href="/sign-up" className="font-semibold text-pink-400 hover:text-pink-300 transition-colors">
             Sign up
           </Link>
         </div>
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -7,7 +7,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen w-full">
+    // REMOVED: bg-[#0a0a0a] and local gradient mesh. 
+    // Now it uses the global background from app/layout.tsx
+    <div className="min-h-screen w-full relative">
       <TasksProvider>
         {children}
         <ClientChatWrapper />
